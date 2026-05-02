@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "json-server": "json-server src/data/db.json --port 3000"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.169.1",
     "@tanstack/react-router-devtools": "^1.166.13",
+    "json-server": "1.0.0-beta.15",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
