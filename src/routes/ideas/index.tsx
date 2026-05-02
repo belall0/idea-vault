@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { IdeasPage } from "../../pages/IdeasPage";
 
 export const Route = createFileRoute("/ideas/")({
   head: () => ({
@@ -7,3 +6,7 @@ export const Route = createFileRoute("/ideas/")({
   }),
   component: IdeasPage,
 });
+
+function IdeasPage() {
+  return <div>IdeasPage</div>;
+}
