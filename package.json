@@ -11,6 +11,7 @@
     "json-server": "json-server src/data/db.json --port 3000"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.8",
     "@tanstack/react-router": "^1.169.1",
     "@tanstack/react-router-devtools": "^1.166.13",
     "react": "^19.2.5",
