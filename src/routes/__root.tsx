@@ -24,6 +24,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   component: RootLayout,
+  notFoundComponent: NotFound,
 });
 
 function RootLayout() {
@@ -39,4 +40,8 @@ function RootLayout() {
       <TanStackRouterDevtools />
     </div>
   );
+}
+
+function NotFound() {
+  return <div>404 Not Found!!!</div>;
 }
