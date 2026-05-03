@@ -1,18 +1,11 @@
-import {
-  HeadContent,
-  createRootRouteWithContext,
-  Outlet,
-} from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { createRootRouteWithContext } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
-import Header from "@/components/layout/Header";
-import NotFound from "@/components/feedback/NotFound";
+import RootLayout from "@/components/layout/RootLayout";
+import NotFoundPage from "@/pages/NotFoundPage";
 
-type RouterContext = {
+export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
-};
-
-export const Route = createRootRouteWithContext<RouterContext>()({
+}>()({
   head: () => ({
     meta: [
       {
@@ -25,20 +18,5 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   component: RootLayout,
-  notFoundComponent: () => <NotFound />,
+  notFoundComponent: () => <NotFoundPage />,
 });
-
-function RootLayout() {
-  return (
-    <div className="flex min-h-screen flex-col bg-gray-100">
-      <HeadContent />
-      <Header />
-      <main className="flex justify-center p-6">
-        <div className="rounted-2xl w-full max-w-4xl bg-white p-8 shadow-lg">
-          <Outlet />
-        </div>
-      </main>
-      <TanStackRouterDevtools />
-    </div>
-  );
-}

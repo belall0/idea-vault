@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getIdeas, getIdea } from "./api";
+import { getIdeas, getIdea } from "./ideas.api";
 
 // --- Structured Query Keys ---
 export const ideaKeys = {

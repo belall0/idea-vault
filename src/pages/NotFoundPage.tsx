@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-function NotFound() {
+function NotFoundPage() {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center space-y-6 text-center">
       <div className="space-y-2">
@@ -21,4 +21,4 @@ function NotFound() {
   );
 }
 
-export default NotFound;
+export default NotFoundPage;

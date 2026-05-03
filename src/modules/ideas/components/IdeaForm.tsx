@@ -1,25 +1,15 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { createIdea } from "@/modules/ideas/api";
-import { ideaKeys } from "@/modules/ideas/queries";
+import { useCreateIdea } from "@/modules/ideas/hooks/useCreateIdea";
 
 function IdeaForm() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: createIdea,
-    onSuccess: () => {
-      // Invalidate the list cache so it refetches in the background
-      queryClient.invalidateQueries({ queryKey: ideaKeys.all });
-      navigate({ to: "/ideas" });
-    },
-  });
+  const { mutateAsync, isPending } = useCreateIdea();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +29,7 @@ function IdeaForm() {
           .map((tag) => tag.trim())
           .filter((tag) => tag !== ""),
       });
+      navigate({ to: "/ideas" });
     } catch (error) {
       console.error(error);
       alert("Something went wrong");
