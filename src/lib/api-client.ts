@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const axiosApi = axios.create({
+const apiClient = axios.create({
   baseURL: "/api",
   withCredentials: true,
   headers: {
@@ -8,4 +8,4 @@ const axiosApi = axios.create({
   },
 });
 
-export default axiosApi;
+export default apiClient;

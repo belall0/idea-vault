@@ -1,31 +1,17 @@
-// TODO: learn about react suspense and error boundaries
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import type { Idea } from "../../../types";
-import axiosApi from "../../../lib/axios";
-
-const fetchIdea = async (ideaId: string): Promise<Idea> => {
-  const { data } = await axiosApi.get(`/ideas/${ideaId}`);
-  return data;
-};
-
-const ideaQueryOptions = (ideaId: string) => {
-  return queryOptions({
-    queryKey: ["ideas", ideaId],
-    queryFn: async () => fetchIdea(ideaId),
-  });
-};
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ideaDetailQueryOptions } from "@/modules/ideas";
 
 export const Route = createFileRoute("/ideas/$ideaid/")({
   component: IdeaDetailsPage,
   loader: async ({ params, context: { queryClient } }) => {
-    return queryClient.ensureQueryData(ideaQueryOptions(params.ideaid));
+    return queryClient.ensureQueryData(ideaDetailQueryOptions(params.ideaid));
   },
 });
 
 function IdeaDetailsPage() {
   const { data: idea } = useSuspenseQuery(
-    ideaQueryOptions(Route.useParams().ideaid),
+    ideaDetailQueryOptions(Route.useParams().ideaid),
   );
 
   return (

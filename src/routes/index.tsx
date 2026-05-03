@@ -1,18 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import type { Idea } from "../types";
-import axiosApi from "../lib/axios";
-
-const fetchIdeas = async (): Promise<Idea[]> => {
-  const { data } = await axiosApi.get("/ideas");
-  return data;
-};
-
-const ideasQueryOptions = () =>
-  queryOptions({
-    queryKey: ["ideas"],
-    queryFn: () => fetchIdeas(),
-  });
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ideasQueryOptions, IdeaCard, type Idea } from "@/modules/ideas";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -44,22 +32,8 @@ function HomePage() {
         <ul className="space-y-6">
           {latestIdeas.map((idea: Idea) => {
             return (
-              <li
-                key={idea.id}
-                className="rounded-lg border border-gray-300 bg-white p-4 shadow"
-              >
-                <h3 className="text-lg font-bold text-gray-900">
-                  {idea.title}
-                </h3>
-                <p className="mb-2 text-gray-600">{idea.summary}</p>
-                <Link
-                  to="/ideas/$ideaid"
-                  params={{ ideaid: idea.id }}
-                  className="text-blue-600 hover:underline"
-                >
-                  {" "}
-                  Read more →{" "}
-                </Link>
+              <li key={idea.id}>
+                <IdeaCard idea={idea} />
               </li>
             );
           })}

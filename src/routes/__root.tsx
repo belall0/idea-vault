@@ -5,7 +5,8 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { QueryClient } from "@tanstack/react-query";
-import Header from "./../components/Header";
+import Header from "@/components/layout/Header";
+import NotFound from "@/components/feedback/NotFound";
 
 type RouterContext = {
   queryClient: QueryClient;
@@ -24,7 +25,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   component: RootLayout,
-  notFoundComponent: NotFound,
+  notFoundComponent: () => <NotFound />,
 });
 
 function RootLayout() {
@@ -40,8 +41,4 @@ function RootLayout() {
       <TanStackRouterDevtools />
     </div>
   );
-}
-
-function NotFound() {
-  return <div>404 Not Found!!!</div>;
 }

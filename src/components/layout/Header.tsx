@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-const Header = () => {
+function Header() {
   return (
     <header className="bg-white shadow">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -27,6 +27,6 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
 export default Header;

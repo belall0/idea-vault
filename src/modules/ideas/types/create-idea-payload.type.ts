@@ -1,9 +1,6 @@
-export type Idea = {
-  id: string;
+export type CreateIdeaPayload = {
   title: string;
   summary: string;
   description: string;
   tags: string[];
-  createdAt: string;
-  user: string;
 };
