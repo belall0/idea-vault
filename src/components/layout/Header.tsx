@@ -1,28 +1,34 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, Lightbulb } from "lucide-react";
 
 function Header() {
   return (
-    <header className="bg-white shadow">
-      <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        <div className="flex items-center space-x-2 text-gray-800">
-          <Link to="/" className="flex items-center space-x-2 text-gray-800">
-            <h1 className="text-2xl font-bold">IdeaDrop</h1>
+    <header className="border-border bg-background border-b">
+      <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Link
+            to="/"
+            className="text-foreground flex items-center gap-2 text-lg font-semibold"
+          >
+            <Lightbulb className="h-5 w-5" />
+            <span>IdeaDrop</span>
           </Link>
         </div>
 
-        <nav className="flex items-center space-x-4">
-          <Link
-            to="/ideas"
-            className="px-3 py-2 leading-none font-medium text-gray-600 transition hover:text-gray-900"
-          >
-            Ideas
-          </Link>
-          <Link
-            to="/ideas/new"
-            className="rounded-md bg-blue-600 px-4 py-2 leading-none font-medium text-white transition hover:bg-blue-700"
-          >
-            + New Idea
-          </Link>
+        {/* Nav */}
+        <nav className="flex items-center gap-4">
+          <Button variant="ghost" asChild>
+            <Link to="/ideas">Ideas</Link>
+          </Button>
+
+          <Button asChild>
+            <Link to="/ideas/new" className="flex items-center gap-2">
+              <PlusCircle className="h-4 w-4" />
+              <span>New Idea</span>
+            </Link>
+          </Button>
         </nav>
       </div>
     </header>

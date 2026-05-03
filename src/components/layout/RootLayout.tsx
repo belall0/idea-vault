@@ -1,15 +1,17 @@
 import { Outlet, HeadContent } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import Header from "@/components/layout/Header";
+import { ToastContainer } from "react-toastify";
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
+      <ToastContainer />
       <HeadContent />
 
       <Header />
       <main className="flex justify-center p-6">
-        <div className="rounted-2xl w-full max-w-4xl bg-white p-8 shadow-lg">
+        <div className="rounted-2xl w-full max-w-6xl bg-white p-8 shadow-lg">
           <Outlet />
         </div>
       </main>
@@ -18,3 +20,5 @@ export default function RootLayout() {
     </div>
   );
 }
+
+export default RootLayout;

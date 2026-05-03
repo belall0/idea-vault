@@ -1,22 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import type { IdeaCardProps } from "@/modules/ideas/types";
+import type { Idea } from "@/modules/ideas/types";
 
-function IdeaCard({ idea }: IdeaCardProps) {
+function IdeaCard({ idea }: { idea: Idea }) {
   return (
     <Link
       to="/ideas/$ideaid"
       params={{ ideaid: idea.id }}
-      className="group flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-blue-200 hover:shadow-md hover:shadow-blue-500/5"
+      className="border-border bg-background hover:bg-accent flex flex-col gap-2 rounded border p-4"
     >
-      <h2 className="text-xl font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
-        {idea.title}
-      </h2>
-      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-gray-600">
-        {idea.summary}
-      </p>
-      <div className="mt-auto flex items-center pt-6 text-xs font-semibold tracking-wider text-blue-600 uppercase">
-        View Idea
-      </div>
+      <h2 className="text-foreground text-lg font-semibold">{idea.title}</h2>
+      <p className="text-muted-foreground text-sm">{idea.summary}</p>
+      <div className="text-foreground mt-2 text-sm font-medium">View Idea</div>
     </Link>
   );
 }

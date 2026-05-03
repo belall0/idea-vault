@@ -2,6 +2,26 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useCreateIdea } from "@/modules/ideas/hooks/useCreateIdea";
 
+import * as z from "zod";
+const formSchema = z.object({
+  title: z
+    .string()
+    .min(5, "Idea title must be at least 5 characters.")
+    .max(32, "Idea title must be at most 32 characters."),
+  summary: z
+    .string()
+    .min(10, "Idea summary must be at least 10 characters.")
+    .max(100, "Idea summary must be at most 100 characters."),
+  description: z
+    .string()
+    .min(20, "Description must be at least 20 characters.")
+    .max(1000, "Description must be at most 1000 characters."),
+  tags: z
+    .string()
+    .min(2, "Tags must be at least 2 characters.")
+    .max(100, "Tags must be at most 100 characters."),
+});
+
 function IdeaForm() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
