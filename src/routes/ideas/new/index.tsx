@@ -1,6 +1,9 @@
+import IdeaForm from "@/components/IdeaForm";
 import { createFileRoute } from "@tanstack/react-router";
-import { NewIdeaPage } from "@/modules/ideas";
 
 export const Route = createFileRoute("/ideas/new/")({
-  component: NewIdeaPage,
+  head: () => ({
+    meta: [{ title: "Create New Idea" }],
+  }),
+  component: IdeaForm,
 });

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { Idea } from "@/modules/ideas/types";
+import type { Idea } from "@/types/idea";
 
 function IdeaCard({ idea }: { idea: Idea }) {
   return (

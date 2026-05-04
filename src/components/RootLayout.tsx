@@ -1,6 +1,6 @@
 import { Outlet, HeadContent } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import Header from "@/components/layout/Header";
+import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 
 function RootLayout() {

@@ -1,15 +1,12 @@
 import { createRootRouteWithContext } from "@tanstack/react-router";
-import { QueryClient } from "@tanstack/react-query";
-import RootLayout from "@/components/layout/RootLayout";
-import NotFoundPage from "@/pages/NotFoundPage";
+import RootLayout from "@/components/RootLayout";
+import type { RouterContext } from "@/types/router-context";
 
-export const Route = createRootRouteWithContext<{
-  queryClient: QueryClient;
-}>()({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       {
-        title: "Idea Vault — Your Idea Hub",
+        title: "Your Idea Hub",
       },
       {
         name: "description",
@@ -18,5 +15,5 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   component: RootLayout,
-  notFoundComponent: () => <NotFoundPage />,
+  notFoundComponent: () => <p>Page not found</p>,
 });
