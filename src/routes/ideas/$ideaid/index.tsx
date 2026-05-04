@@ -14,7 +14,7 @@ export const Route = createFileRoute("/ideas/$ideaid/")({
   component: IdeaDetailsPage,
 });
 
-export function IdeaDetailsPage() {
+function IdeaDetailsPage() {
   const { ideaid } = Route.useParams();
   const { data: idea } = useSuspenseQuery(ideaDetailQueryOptions(ideaid));
 

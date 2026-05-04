@@ -1,8 +1,8 @@
+import { useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
-import { useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,30 +26,15 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import apiClient from "@/lib/api-client";
-
-const formSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Bug title must be at least 5 characters.")
-    .max(32, "Bug title must be at most 32 characters."),
-  summary: z
-    .string()
-    .min(10, "Summary must be at least 10 characters.")
-    .max(100, "Summary must be at most 100 characters."),
-  description: z
-    .string()
-    .min(20, "Description must be at least 20 characters.")
-    .max(200, "Description must be at most 200 characters."),
-  tags: z
-    .string()
-    .min(10, "Tags must be at least 10 characters.")
-    .max(100, "Tags must be at most 100 characters."),
-});
+import { createIdea } from "@/api/ideas";
+import { ideaFormSchema, type IdeaFormValues } from "@/schemas/idea";
 
 function IdeaForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const form = useForm<IdeaFormValues>({
+    resolver: zodResolver(ideaFormSchema),
     defaultValues: {
       title: "",
       summary: "",
@@ -59,23 +44,19 @@ function IdeaForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (payload: z.infer<typeof formSchema>) => {
-      const { data } = await apiClient.post("/ideas", {
-        ...payload,
-        createdAt: new Date().toISOString(),
-      });
-      return data;
-    },
+    mutationFn: createIdea,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ideas"] });
       toast.success("Idea Created Successfully");
       form.reset();
+      navigate({ to: "/ideas" });
     },
     onError: () => {
       toast.error("Failed to create idea");
     },
   });
 
-  function handleSubmit(data: z.infer<typeof formSchema>) {
+  function handleSubmit(data: IdeaFormValues) {
     mutation.mutate(data);
   }
 
@@ -121,7 +102,7 @@ function IdeaForm() {
 
                   <Input
                     {...field}
-                    id="Summary"
+                    id="summary"
                     placeholder="Enter Idea Summary"
                     autoComplete="off"
                   />
