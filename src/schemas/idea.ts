@@ -13,10 +13,6 @@ export const ideaFormSchema = z.object({
     .string()
     .min(20, "Description must be at least 20 characters.")
     .max(200, "Description must be at most 200 characters."),
-  tags: z
-    .string()
-    .min(10, "Tags must be at least 10 characters.")
-    .max(100, "Tags must be at most 100 characters."),
 });
 
 export type IdeaFormValues = z.infer<typeof ideaFormSchema>;

@@ -39,7 +39,6 @@ function IdeaForm() {
       title: "",
       summary: "",
       description: "",
-      tags: "",
     },
   });
 
@@ -137,28 +136,6 @@ function IdeaForm() {
                       </InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            {/* tags */}
-            <Controller
-              name="tags"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="tags">Tags</FieldLabel>
-
-                  <Input
-                    {...field}
-                    id="tags"
-                    placeholder="Enter Tags"
-                    autoComplete="off"
-                  />
 
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
