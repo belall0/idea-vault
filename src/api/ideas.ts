@@ -19,3 +19,12 @@ export const createIdea = async (payload: IdeaFormValues): Promise<Idea> => {
   });
   return data;
 };
+
+export const updateIdea = async (id: string, payload: IdeaFormValues): Promise<Idea> => {
+  const { data } = await apiClient.put(`/ideas/${id}`, payload);
+  return data;
+};
+
+export const deleteIdea = async (id: string): Promise<void> => {
+  await apiClient.delete(`/ideas/${id}`);
+};
