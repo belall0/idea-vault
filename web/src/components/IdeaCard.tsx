@@ -5,7 +5,7 @@ function IdeaCard({ idea }: { idea: Idea }) {
   return (
     <Link
       to="/ideas/$ideaid"
-      params={{ ideaid: idea.id }}
+      params={{ ideaid: idea._id }}
       className="border-border bg-background hover:bg-accent flex flex-col gap-2 rounded border p-4"
     >
       <h2 className="text-foreground text-lg font-semibold">{idea.title}</h2>

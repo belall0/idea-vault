@@ -32,12 +32,12 @@ export default function EditIdeaForm({ idea }: { idea: Idea }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: IdeaFormValues) => updateIdea(idea.id, data),
+    mutationFn: (data: IdeaFormValues) => updateIdea(idea._id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ideas"] });
-      queryClient.invalidateQueries({ queryKey: ["ideas", idea.id] });
+      queryClient.invalidateQueries({ queryKey: ["ideas", idea._id] });
       toast.success("Idea Updated Successfully");
-      navigate({ to: `/ideas/${idea.id}` });
+      navigate({ to: `/ideas/${idea._id}` });
     },
     onError: () => {
       toast.error("Failed to update idea");
@@ -68,7 +68,7 @@ export default function EditIdeaForm({ idea }: { idea: Idea }) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: `/ideas/${idea.id}` })}
+            onClick={() => navigate({ to: `/ideas/${idea._id}` })}
             disabled={mutation.isPending}
           >
             Cancel

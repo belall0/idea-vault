@@ -33,7 +33,7 @@ function HomePage() {
         <ul className="space-y-6">
           {ideas.map((idea) => {
             return (
-              <li key={idea.id}>
+              <li key={idea._id}>
                 <IdeaCard idea={idea} />
               </li>
             );

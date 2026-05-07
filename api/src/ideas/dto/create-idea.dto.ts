@@ -13,6 +13,6 @@ export class CreateIdeaDto {
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(300)
+  @MaxLength(600)
   description: string;
 }
