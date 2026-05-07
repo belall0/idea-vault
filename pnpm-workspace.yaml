@@ -3,4 +3,6 @@ packages:
   - api
 
 allowBuilds:
+  '@nestjs/core': true
   msw: true
+  unrs-resolver: true
