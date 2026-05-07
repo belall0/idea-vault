@@ -1,2 +1,6 @@
+packages:
+  - web
+  - api
+
 allowBuilds:
   msw: true

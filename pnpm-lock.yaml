@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  web:
     dependencies:
       '@fontsource-variable/geist':
         specifier: ^5.2.8
