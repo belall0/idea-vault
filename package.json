@@ -1,11 +1,12 @@
 {
   "name": "idea-vault",
   "version": "1.0.0",
-  "description": "",
+  "description": "Idea Vault - Collection of ideas",
   "main": "index.js",
-  "scripts": {},
-  "keywords": [],
-  "author": "",
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev"
+  },
   "license": "ISC",
   "packageManager": "pnpm@10.33.0"
 }
