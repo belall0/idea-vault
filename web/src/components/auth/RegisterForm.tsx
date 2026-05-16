@@ -1,4 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -49,6 +50,19 @@ function RegisterForm() {
     },
   });
 
+  const errorMessages = useMemo(() => {
+    if (!mutation.error) return null;
+
+    const errorData = (mutation.error as any)?.response?.data;
+    if (!errorData) return ["An unexpected error occurred"];
+
+    if (Array.isArray(errorData.message)) {
+      return errorData.message;
+    }
+
+    return [errorData.message || "An unexpected error occurred"];
+  }, [mutation.error]);
+
   function handleSubmit(data: RegisterFormValues) {
     mutation.mutate(data);
   }
@@ -63,6 +77,13 @@ function RegisterForm() {
       <CardContent>
         <FormProvider {...form}>
           <form id="register-form" onSubmit={form.handleSubmit(handleSubmit)}>
+            {errorMessages && (
+              <div className="border-destructive/20 bg-destructive/5 mb-6 rounded-lg border p-3">
+                <FieldError
+                  errors={errorMessages.map((m: any) => ({ message: m }))}
+                />
+              </div>
+            )}
             <FieldGroup>
               {/* name */}
               <Controller
@@ -161,7 +182,7 @@ function RegisterForm() {
         </FormProvider>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="flex flex-col items-start gap-4">
         <Field orientation="horizontal">
           <Button
             type="button"
@@ -180,6 +201,16 @@ function RegisterForm() {
             {mutation.isPending ? "Submitting..." : "Submit"}
           </Button>
         </Field>
+
+        <p className="text-muted-foreground text-sm">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-foreground underline underline-offset-4"
+          >
+            Login
+          </Link>
+        </p>
       </CardFooter>
     </Card>
   );
