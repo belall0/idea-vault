@@ -9,15 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IdeasIndexRouteImport } from './routes/ideas/index'
+import { Route as ProtectedProfileRouteImport } from './routes/_protected.profile'
 import { Route as IdeasNewIndexRouteImport } from './routes/ideas/new/index'
 import { Route as IdeasIdeaidIndexRouteImport } from './routes/ideas/$ideaid/index'
 import { Route as authRegisterIndexRouteImport } from './routes/(auth)/register/index'
 import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
 import { Route as IdeasIdeaidEditRouteImport } from './routes/ideas/$ideaid/edit'
 
+const ProtectedRoute = ProtectedRouteImport.update({
+  id: '/_protected',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authRouteRoute = authRouteRouteImport.update({
   id: '/(auth)',
   getParentRoute: () => rootRouteImport,
@@ -31,6 +37,11 @@ const IdeasIndexRoute = IdeasIndexRouteImport.update({
   id: '/ideas/',
   path: '/ideas/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedProfileRoute = ProtectedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const IdeasNewIndexRoute = IdeasNewIndexRouteImport.update({
   id: '/ideas/new/',
@@ -60,6 +71,7 @@ const IdeasIdeaidEditRoute = IdeasIdeaidEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/profile': typeof ProtectedProfileRoute
   '/ideas/': typeof IdeasIndexRoute
   '/ideas/$ideaid/edit': typeof IdeasIdeaidEditRoute
   '/login/': typeof authLoginIndexRoute
@@ -69,6 +81,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/profile': typeof ProtectedProfileRoute
   '/ideas': typeof IdeasIndexRoute
   '/ideas/$ideaid/edit': typeof IdeasIdeaidEditRoute
   '/login': typeof authLoginIndexRoute
@@ -80,6 +93,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/(auth)': typeof authRouteRouteWithChildren
+  '/_protected': typeof ProtectedRouteWithChildren
+  '/_protected/profile': typeof ProtectedProfileRoute
   '/ideas/': typeof IdeasIndexRoute
   '/ideas/$ideaid/edit': typeof IdeasIdeaidEditRoute
   '/(auth)/login/': typeof authLoginIndexRoute
@@ -91,6 +106,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/profile'
     | '/ideas/'
     | '/ideas/$ideaid/edit'
     | '/login/'
@@ -100,6 +116,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/profile'
     | '/ideas'
     | '/ideas/$ideaid/edit'
     | '/login'
@@ -110,6 +127,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/(auth)'
+    | '/_protected'
+    | '/_protected/profile'
     | '/ideas/'
     | '/ideas/$ideaid/edit'
     | '/(auth)/login/'
@@ -121,6 +140,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   authRouteRoute: typeof authRouteRouteWithChildren
+  ProtectedRoute: typeof ProtectedRouteWithChildren
   IdeasIndexRoute: typeof IdeasIndexRoute
   IdeasIdeaidEditRoute: typeof IdeasIdeaidEditRoute
   IdeasIdeaidIndexRoute: typeof IdeasIdeaidIndexRoute
@@ -129,6 +149,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)': {
       id: '/(auth)'
       path: ''
@@ -149,6 +176,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/ideas/'
       preLoaderRoute: typeof IdeasIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_protected/profile': {
+      id: '/_protected/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProtectedProfileRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/ideas/new/': {
       id: '/ideas/new/'
@@ -202,9 +236,22 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
   authRouteRouteChildren,
 )
 
+interface ProtectedRouteChildren {
+  ProtectedProfileRoute: typeof ProtectedProfileRoute
+}
+
+const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedProfileRoute: ProtectedProfileRoute,
+}
+
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
+  ProtectedRoute: ProtectedRouteWithChildren,
   IdeasIndexRoute: IdeasIndexRoute,
   IdeasIdeaidEditRoute: IdeasIdeaidEditRoute,
   IdeasIdeaidIndexRoute: IdeasIdeaidIndexRoute,

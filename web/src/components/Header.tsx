@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Lightbulb } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 function Header() {
+  const { user } = useAuth();
+
   return (
     <header className="border-border bg-background border-b">
       <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
@@ -23,23 +26,33 @@ function Header() {
             <Link to="/ideas">Ideas</Link>
           </Button>
 
-          <Button asChild>
-            <Link to="/ideas/new" className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" />
-              <span>New Idea</span>
-            </Link>
-          </Button>
+          {user && (
+            <Button asChild>
+              <Link to="/ideas/new" className="flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
+                <span>New Idea</span>
+              </Link>
+            </Button>
+          )}
         </nav>
 
         {/* Auth */}
         <div className="flex flex-1 items-center justify-end gap-2">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Login</Link>
-          </Button>
+          {!user ? (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/login">Login</Link>
+              </Button>
 
-          <Button variant="outline" asChild>
-            <Link to="/register">Register</Link>
-          </Button>
+              <Button variant="outline" asChild>
+                <Link to="/register">Register</Link>
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" asChild>
+              <Link to="/profile">Profile</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

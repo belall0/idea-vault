@@ -11,3 +11,13 @@ export const login = async (values: LoginFormValues) => {
   const { data } = await apiClient.post("/auth/login", values);
   return data;
 };
+
+export const refresh = async () => {
+  const { data } = await apiClient.post("/auth/refresh");
+  return data;
+};
+
+export const logout = async () => {
+  const { data } = await apiClient.post("/auth/logout");
+  return data;
+};
