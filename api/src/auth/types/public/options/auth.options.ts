@@ -4,10 +4,10 @@ export class AuthOptions {
   public expiresIn = 15 * 60; // 15 minutes
   public refreshTokenCookie = 'refreshToken';
   public cookieOptions = {
-    httpOnly: true, // JS cannot read this cookie
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
-    sameSite: 'strict' as const, // No cross-origin requests
-    path: '/auth/refresh', // Cookie only sent to this path
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/api/auth',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   };
 }

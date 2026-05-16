@@ -23,9 +23,9 @@ export class AuthService {
   public async register(registerDto: RegisterDto) {
     const { name, email, password } = registerDto;
     const hash = await argon.hash(password);
+
     const user = await this.usersService.create({ name, email, hash });
 
-    // We don't issue tokens here to ensure the user goes through the formal login flow,
     return {
       message: 'User registered successfully',
       user: {
@@ -61,17 +61,14 @@ export class AuthService {
   public async refresh(
     rawRefreshToken: string,
   ): Promise<{ accessToken: string; rawRefreshToken: string }> {
-    // Validate — this throws on any invalid state
     const record =
       await this.refreshTokenService.validateRefreshToken(rawRefreshToken);
 
-    // Rotate — old token consumed, new token issued in same session family
     const newRawRefreshToken =
       await this.refreshTokenService.rotateRefreshToken(record);
 
     const accessToken = await this.signToken(
       record.userId.toString(),
-      // We need the email — fetch the user
       (await this.usersService.findById(record.userId.toString()))!.email,
     );
 
@@ -79,9 +76,6 @@ export class AuthService {
   }
 
   public async logout(rawRefreshToken: string): Promise<void> {
-    // Hash and find the record, then revoke its session
-    // We do this via RefreshTokenService which handles the lookup
-    // If the token is invalid or missing, we still return success (idempotent)
     try {
       const record =
         await this.refreshTokenService.validateRefreshToken(rawRefreshToken);

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { createHash, randomBytes } from 'crypto';
@@ -11,8 +11,6 @@ import {
 
 @Injectable()
 export class RefreshTokenService {
-  private logger = new Logger(RefreshTokenService.name);
-
   public constructor(
     @InjectModel(RefreshToken.name)
     private refreshTokenModel: Model<RefreshTokenDocument>,
@@ -38,12 +36,6 @@ export class RefreshTokenService {
       replacedByTokenHash: null,
     });
 
-    this.logger.log({
-      event: 'REFRESH_TOKEN_CREATED',
-      userId,
-      sessionId,
-    });
-
     return { rawToken, sessionId };
   }
 
@@ -60,9 +52,6 @@ export class RefreshTokenService {
 
     // Case 1: Token doesn't exist at all — could be garbage, could be forged
     if (!record) {
-      this.logger.warn({
-        event: 'REFRESH_TOKEN_NOT_FOUND',
-      });
       throw new UnauthorizedException();
     }
 
@@ -70,22 +59,12 @@ export class RefreshTokenService {
     // Someone is replaying a consumed token. Assume the session is compromised.
     // Revoke the entire family immediately.
     if (record.revokedAt !== null) {
-      this.logger.warn({
-        event: 'REFRESH_TOKEN_REUSE_DETECTED',
-        userId: record.userId,
-        sessionId: record.sessionId,
-      });
       await this.revokeEntireSession(record.sessionId);
       throw new UnauthorizedException();
     }
 
     // Case 3: Token exists and is active, but has expired
     if (record.expiresAt < new Date()) {
-      this.logger.warn({
-        event: 'REFRESH_TOKEN_EXPIRED',
-        userId: record.userId,
-        sessionId: record.sessionId,
-      });
       throw new UnauthorizedException();
     }
 
@@ -119,12 +98,6 @@ export class RefreshTokenService {
       replacedByTokenHash: null,
     });
 
-    this.logger.log({
-      event: 'REFRESH_TOKEN_ROTATED',
-      userId: oldRecord.userId,
-      sessionId: oldRecord.sessionId,
-    });
-
     return rawToken;
   }
 
@@ -137,8 +110,6 @@ export class RefreshTokenService {
       { sessionId, revokedAt: null },
       { revokedAt: new Date() },
     );
-
-    this.logger.log({ event: 'SESSION_REVOKED', sessionId });
   }
 
   /**
@@ -150,8 +121,6 @@ export class RefreshTokenService {
       { userId: new Types.ObjectId(userId), revokedAt: null },
       { revokedAt: new Date() },
     );
-
-    this.logger.log({ event: 'ALL_SESSIONS_REVOKED', userId });
   }
 
   private generateRawToken(): string {
