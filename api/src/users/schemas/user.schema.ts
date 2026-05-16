@@ -5,8 +5,8 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop()
-  name?: string;
+  @Prop({ required: true })
+  name: string;
 
   @Prop({ unique: true, required: true })
   email: string;

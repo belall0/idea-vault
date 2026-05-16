@@ -24,10 +24,16 @@ export class AuthService {
     const { name, email, password } = registerDto;
     const hash = await argon.hash(password);
     const user = await this.usersService.create({ name, email, hash });
-    const accessToken = await this.signToken(user.id, user.email);
-    // Register doesn't create a refresh token session —
-    // force the user through login so the IP/UA context is correct.
-    return { access_token: accessToken };
+
+    // We don't issue tokens here to ensure the user goes through the formal login flow,
+    return {
+      message: 'User registered successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    };
   }
 
   public async login(
