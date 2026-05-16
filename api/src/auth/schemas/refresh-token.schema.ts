@@ -29,12 +29,12 @@ export class RefreshToken {
   expiresAt: Date;
 
   // Set when this token is rotated or revoked. Null = still active.
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   revokedAt: Date | null;
 
   // After rotation, points to the hash of the token that replaced this one.
   // Purely for audit trail — lets you reconstruct the rotation chain.
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   replacedByTokenHash: string | null;
 }
 

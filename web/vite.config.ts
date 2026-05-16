@@ -19,16 +19,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-
-  server: {
-    watch: {
-      ignored: ["**/db.json"],
-    },
-    proxy: {
-      "/api": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-      },
-    },
-  },
 });
