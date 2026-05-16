@@ -1,10 +1,21 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { IdeasModule } from '@/src/ideas/ideas.module';
+
+import { AppConfigModule } from '../app-config/app-config.module';
+import { AppConfigService } from '../app-config/app-config.service';
+import { IdeasModule } from '../ideas/ideas.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/ideavault'),
+    MongooseModule.forRootAsync({
+      inject: [AppConfigService],
+      useFactory: (appConfigService: AppConfigService) => {
+        return {
+          uri: appConfigService.appOptions.dbUrl,
+        };
+      },
+    }),
+    AppConfigModule,
     IdeasModule,
   ],
 })
