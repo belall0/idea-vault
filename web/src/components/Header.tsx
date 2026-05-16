@@ -7,7 +7,7 @@ function Header() {
     <header className="border-border bg-background border-b">
       <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex flex-1 items-center justify-start">
           <Link
             to="/"
             className="text-foreground flex items-center gap-2 text-lg font-semibold"
@@ -30,6 +30,17 @@ function Header() {
             </Link>
           </Button>
         </nav>
+
+        {/* Auth */}
+        <div className="flex flex-1 items-center justify-end gap-2">
+          <Button variant="ghost" asChild>
+            <Link to="/login">Login</Link>
+          </Button>
+
+          <Button variant="outline" asChild>
+            <Link to="/register">Register</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
