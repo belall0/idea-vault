@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Idea, IdeaDocument } from './schemas/idea.schema';
-import { CreateIdeaDto } from './dto/create-idea.dto';
-import { UpdateIdeaDto } from './dto/update-idea.dto';
+import { CreateIdeaDto } from './types/dtos/create-idea.dto';
+import { UpdateIdeaDto } from './types/dtos/update-idea.dto';
 
 @Injectable()
 export class IdeasService {
