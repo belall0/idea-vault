@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { registerFormSchema, type RegisterFormValues } from "@/schemas/auth";
-import RegisterFormFields from "@/components/auth/RegisterFormFields";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,8 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Field } from "@/components/ui/field";
 import { register } from "@/api/auth";
+
+import { Controller } from "react-hook-form";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 function RegisterForm() {
   const navigate = useNavigate();
@@ -56,7 +63,100 @@ function RegisterForm() {
       <CardContent>
         <FormProvider {...form}>
           <form id="register-form" onSubmit={form.handleSubmit(handleSubmit)}>
-            <RegisterFormFields />
+            <FieldGroup>
+              {/* name */}
+              <Controller
+                name="name"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="name">Name</FieldLabel>
+
+                    <Input
+                      {...field}
+                      id="name"
+                      placeholder="Enter your Name"
+                      autoComplete="name"
+                    />
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {/* email */}
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+
+                    <Input
+                      {...field}
+                      type="email"
+                      id="email"
+                      placeholder="Enter your Email"
+                      autoComplete="email"
+                    />
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {/* password */}
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+
+                    <Input
+                      {...field}
+                      type="password"
+                      id="password"
+                      placeholder="Enter your Password"
+                      autoComplete="new-password"
+                    />
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {/* password */}
+              <Controller
+                name="confirmPassword"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="confirmPassword">
+                      ConfirmPassword
+                    </FieldLabel>
+
+                    <Input
+                      {...field}
+                      type="password"
+                      id="confirmPassword"
+                      placeholder="Enter your ConfirmPassword"
+                      autoComplete="new-password"
+                    />
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
           </form>
         </FormProvider>
       </CardContent>
