@@ -54,6 +54,9 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    // TODO: Remove this line after completing testing
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const cookies = req.cookies as Record<string, string | undefined>;
     const rawRefreshToken = cookies[this.config.authOptions.refreshTokenCookie];
 
