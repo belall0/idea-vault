@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -13,6 +13,11 @@ import "@/index.css";
 
 function InnerApp() {
   const auth = useAuth();
+
+  useEffect(() => {
+    router.invalidate();
+  }, [auth.user, auth.accessToken]);
+
   if (auth.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">

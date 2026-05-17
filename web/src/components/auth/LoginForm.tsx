@@ -22,9 +22,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { getCurrentUser } from "@/api/users";
+import { useAuth } from "@/hooks/useAuth";
+import { setToken } from "@/lib/api-client";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -35,8 +39,14 @@ function LoginForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: login,
-    onSuccess: () => {
+    mutationFn: async (values: LoginFormValues) => {
+      const { access_token } = await login(values);
+      setToken(access_token);
+      const user = await getCurrentUser();
+      return { access_token, user };
+    },
+    onSuccess: (data) => {
+      setAuth(data.access_token, data.user);
       toast.success("Logged in successfully");
       form.reset();
       navigate({ to: "/" });
