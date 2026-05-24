@@ -36,7 +36,6 @@ async function seed() {
       name,
       email,
       hash,
-      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

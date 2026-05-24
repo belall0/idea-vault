@@ -13,9 +13,6 @@ export class User {
 
   @Prop({ required: true })
   hash: string;
-
-  @Prop({ default: true })
-  isActive: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -33,11 +33,11 @@ export class UsersService {
   }
 
   public async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email, isActive: true }).exec();
+    return this.userModel.findOne({ email }).exec();
   }
 
   public async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ _id: id, isActive: true }).exec();
+    return this.userModel.findOne({ _id: id }).exec();
   }
 
   public async update(
@@ -52,16 +52,14 @@ export class UsersService {
     }
 
     return this.userModel
-      .findOneAndUpdate({ _id: id, isActive: true }, editUserDto, {
+      .findOneAndUpdate({ _id: id }, editUserDto, {
         returnDocument: 'after',
       })
       .exec();
   }
 
-  public async softDelete(id: string): Promise<void> {
-    await this.userModel
-      .findOneAndUpdate({ _id: id }, { isActive: false })
-      .exec();
+  public async delete(id: string): Promise<void> {
+    await this.userModel.findOneAndDelete({ _id: id }).exec();
   }
 
   public async updateHash(id: string, hash: string): Promise<void> {

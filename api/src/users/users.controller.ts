@@ -30,7 +30,7 @@ export class UsersController {
 
   @Delete('me')
   async deleteUser(@GetUser('id') userId: string) {
-    await this.usersService.softDelete(userId);
+    await this.usersService.delete(userId);
     return { success: true };
   }
 }
