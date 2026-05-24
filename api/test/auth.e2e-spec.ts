@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { createHash } from 'crypto';
 import * as pactum from 'pactum';
 import * as argon from 'argon2';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { buildTestApp } from './helpers/app.helper';
 import { User, UserDocument } from '@/src/users/schemas/user.schema';
@@ -11,6 +13,10 @@ import {
   RefreshTokenDocument,
 } from '@/src/auth/schemas/refresh-token.schema';
 import { RegisterDto } from '@/src/auth/types';
+
+jest
+  .spyOn(ThrottlerGuard.prototype, 'canActivate')
+  .mockImplementation(async () => Promise.resolve(true));
 
 describe('Auth e2e', () => {
   let app: INestApplication;
@@ -288,6 +294,256 @@ describe('Auth e2e', () => {
         const finalCount = await refreshTokenModel.countDocuments({
           userId: user!._id,
         });
+        expect(finalCount).toBe(initialCount);
+      });
+    });
+  });
+
+  describe('POST /auth/refresh', () => {
+    const refreshUser = {
+      name: 'Refresh Tester',
+      email: 'refresh-test@example.com',
+      password: 'Password123!',
+    };
+    let userId: string;
+
+    const getValidSession = async (): Promise<{
+      rawRefreshToken: string;
+      accessToken: string;
+    }> => {
+      let rawRefreshToken = '';
+      let accessToken = '';
+
+      await pactum
+        .spec()
+        .post('/auth/login')
+        .withBody({
+          email: refreshUser.email,
+          password: refreshUser.password,
+        })
+        .expectStatus(200)
+        .expect((ctx) => {
+          accessToken = (ctx.res.body as { access_token: string }).access_token;
+          const setCookie = ctx.res.headers['set-cookie'];
+          if (setCookie && setCookie[0]) {
+            const match = setCookie[0].match(/refreshToken=([^;]+)/);
+            if (match) {
+              rawRefreshToken = match[1];
+            }
+          }
+        });
+
+      return { rawRefreshToken, accessToken };
+    };
+
+    beforeAll(async () => {
+      const hash = await argon.hash(refreshUser.password);
+      const user = await userModel.create({
+        name: refreshUser.name,
+        email: refreshUser.email,
+        hash,
+      });
+      userId = user._id.toString();
+    });
+
+    describe('input validation', () => {
+      it('should reject refresh when refresh token cookie is missing → 401', async () => {
+        await pactum.spec().post('/auth/refresh').expectStatus(401);
+      });
+    });
+
+    describe('business logic', () => {
+      it('should rotate refresh token and return new access token → 200', async () => {
+        const { rawRefreshToken } = await getValidSession();
+
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${rawRefreshToken}`)
+          .expectStatus(200)
+          .expect((ctx) => {
+            const body = ctx.res.body as { access_token: string };
+            expect(body.access_token).toBeDefined();
+            expect(typeof body.access_token).toBe('string');
+
+            const setCookie = ctx.res.headers['set-cookie'];
+            expect(setCookie).toBeDefined();
+            expect(setCookie![0]).toContain('refreshToken=');
+          });
+      });
+
+      it('should reject refresh when token is not found in DB → 401', async () => {
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', 'refreshToken=nonexistenttoken123')
+          .expectStatus(401);
+      });
+
+      it('should reject refresh when token is expired in DB → 401', async () => {
+        const expiredRawToken = 'expiredtokenraw123';
+        const expiredHash = createHash('sha256')
+          .update(expiredRawToken)
+          .digest('hex');
+
+        await refreshTokenModel.create({
+          tokenHash: expiredHash,
+          userId: new Types.ObjectId(userId),
+          sessionId: 'some-session-id',
+          expiresAt: new Date(Date.now() - 10000), // 10s in the past
+          revokedAt: null,
+          replacedByTokenHash: null,
+        });
+
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${expiredRawToken}`)
+          .expectStatus(401);
+      });
+
+      it('should reject refresh and revoke entire session family when token is reused → 401', async () => {
+        const { rawRefreshToken: firstRawToken } = await getValidSession();
+
+        // Consume the token once to get the second token
+        let secondRawToken = '';
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${firstRawToken}`)
+          .expectStatus(200)
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            const match = setCookie![0].match(/refreshToken=([^;]+)/);
+            if (match) {
+              secondRawToken = match[1];
+            }
+          });
+
+        const firstHash = createHash('sha256')
+          .update(firstRawToken)
+          .digest('hex');
+        const firstRecord = await refreshTokenModel.findOne({
+          tokenHash: firstHash,
+        });
+        const _sessionId = firstRecord!.sessionId;
+
+        // Verify second token is active before reuse
+        const secondHash = createHash('sha256')
+          .update(secondRawToken)
+          .digest('hex');
+        const secondRecordBefore = await refreshTokenModel.findOne({
+          tokenHash: secondHash,
+        });
+        expect(secondRecordBefore!.revokedAt).toBeNull();
+
+        // Reuse the consumed first token!
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${firstRawToken}`)
+          .expectStatus(401);
+
+        // Side effects: Verify that the second token in the session family has been revoked too!
+        const secondRecordAfter = await refreshTokenModel.findOne({
+          tokenHash: secondHash,
+        });
+        expect(secondRecordAfter!.revokedAt).not.toBeNull();
+      });
+    });
+
+    describe('side effects', () => {
+      it('should mark the old token as consumed and persist a new linked token in DB', async () => {
+        const { rawRefreshToken } = await getValidSession();
+        const oldHash = createHash('sha256')
+          .update(rawRefreshToken)
+          .digest('hex');
+
+        const oldRecordBefore = await refreshTokenModel.findOne({
+          tokenHash: oldHash,
+        });
+        expect(oldRecordBefore).not.toBeNull();
+        expect(oldRecordBefore!.revokedAt).toBeNull();
+        const sessionId = oldRecordBefore!.sessionId;
+
+        let newRawRefreshToken = '';
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${rawRefreshToken}`)
+          .expectStatus(200)
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            const match = setCookie![0].match(/refreshToken=([^;]+)/);
+            if (match) {
+              newRawRefreshToken = match[1];
+            }
+          });
+
+        const oldRecordAfter = await refreshTokenModel.findOne({
+          tokenHash: oldHash,
+        });
+        expect(oldRecordAfter!.revokedAt).not.toBeNull();
+        const newHash = createHash('sha256')
+          .update(newRawRefreshToken)
+          .digest('hex');
+        expect(oldRecordAfter!.replacedByTokenHash).toBe(newHash);
+
+        const newRecord = await refreshTokenModel.findOne({
+          tokenHash: newHash,
+        });
+        expect(newRecord).not.toBeNull();
+        expect(newRecord!.revokedAt).toBeNull();
+        expect(newRecord!.sessionId).toBe(sessionId);
+        expect(newRecord!.userId.toString()).toBe(userId);
+      });
+
+      it('should immediately revoke all active tokens sharing the same sessionId in DB', async () => {
+        const { rawRefreshToken: firstRawToken } = await getValidSession();
+
+        // Rotate once
+        let secondRawToken = '';
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${firstRawToken}`)
+          .expectStatus(200)
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            const match = setCookie![0].match(/refreshToken=([^;]+)/);
+            if (match) {
+              secondRawToken = match[1];
+            }
+          });
+
+        const secondHash = createHash('sha256')
+          .update(secondRawToken)
+          .digest('hex');
+
+        // Reuse the first (already consumed) token to trigger compromise response
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', `refreshToken=${firstRawToken}`)
+          .expectStatus(401);
+
+        // Verify the entire family is now revoked
+        const secondRecord = await refreshTokenModel.findOne({
+          tokenHash: secondHash,
+        });
+        expect(secondRecord!.revokedAt).not.toBeNull();
+      });
+
+      it('should not persist any new tokens or alter unrelated sessions in DB on failure', async () => {
+        const initialCount = await refreshTokenModel.countDocuments();
+
+        await pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders('Cookie', 'refreshToken=nonexistenttoken123')
+          .expectStatus(401);
+
+        const finalCount = await refreshTokenModel.countDocuments();
         expect(finalCount).toBe(initialCount);
       });
     });
