@@ -548,4 +548,478 @@ describe('Auth e2e', () => {
       });
     });
   });
+
+  describe('POST /auth/logout', () => {
+    const logoutUser = {
+      name: 'Logout Tester',
+      email: 'logout-test@example.com',
+      password: 'Password123!',
+    };
+    let _userId: string;
+
+    const getValidSession = async (): Promise<{
+      rawRefreshToken: string;
+      accessToken: string;
+    }> => {
+      let rawRefreshToken = '';
+      let accessToken = '';
+
+      await pactum
+        .spec()
+        .post('/auth/login')
+        .withBody({
+          email: logoutUser.email,
+          password: logoutUser.password,
+        })
+        .expectStatus(200)
+        .expect((ctx) => {
+          accessToken = (ctx.res.body as { access_token: string }).access_token;
+          const setCookie = ctx.res.headers['set-cookie'];
+          if (setCookie && setCookie[0]) {
+            const match = setCookie[0].match(/refreshToken=([^;]+)/);
+            if (match) {
+              rawRefreshToken = match[1];
+            }
+          }
+        });
+
+      return { rawRefreshToken, accessToken };
+    };
+
+    beforeAll(async () => {
+      const hash = await argon.hash(logoutUser.password);
+      const user = await userModel.create({
+        name: logoutUser.name,
+        email: logoutUser.email,
+        hash,
+      });
+      _userId = user._id.toString();
+    });
+
+    describe('authentication', () => {
+      it('should allow logout even without JWT bearer token → 200', async () => {
+        await pactum
+          .spec()
+          .post('/auth/logout')
+          .expectStatus(200)
+          .expectJson({ success: true });
+      });
+    });
+
+    describe('business logic', () => {
+      it('should clear refresh token cookie and return success on happy path → 200', async () => {
+        const { rawRefreshToken } = await getValidSession();
+
+        await pactum
+          .spec()
+          .post('/auth/logout')
+          .withHeaders('Cookie', `refreshToken=${rawRefreshToken}`)
+          .expectStatus(200)
+          .expectJson({ success: true })
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            expect(setCookie).toBeDefined();
+            expect(setCookie![0]).toContain('refreshToken=');
+            expect(setCookie![0]).toMatch(/Expires=Thu, 01 Jan 1970|Max-Age=0/);
+          });
+      });
+
+      it('should succeed and clear cookie even if cookie is missing → 200', async () => {
+        await pactum
+          .spec()
+          .post('/auth/logout')
+          .expectStatus(200)
+          .expectJson({ success: true })
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            expect(setCookie).toBeDefined();
+            expect(setCookie![0]).toContain('refreshToken=');
+            expect(setCookie![0]).toMatch(/Expires=Thu, 01 Jan 1970|Max-Age=0/);
+          });
+      });
+
+      it('should succeed and clear cookie even if token is invalid or expired → 200', async () => {
+        await pactum
+          .spec()
+          .post('/auth/logout')
+          .withHeaders('Cookie', 'refreshToken=invalidtoken123')
+          .expectStatus(200)
+          .expectJson({ success: true })
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            expect(setCookie).toBeDefined();
+            expect(setCookie![0]).toContain('refreshToken=');
+            expect(setCookie![0]).toMatch(/Expires=Thu, 01 Jan 1970|Max-Age=0/);
+          });
+      });
+    });
+
+    describe('side effects', () => {
+      it('should revoke the entire session family in DB on valid logout', async () => {
+        const { rawRefreshToken } = await getValidSession();
+        const hash = createHash('sha256').update(rawRefreshToken).digest('hex');
+
+        const recordBefore = await refreshTokenModel.findOne({
+          tokenHash: hash,
+        });
+        expect(recordBefore).not.toBeNull();
+        expect(recordBefore!.revokedAt).toBeNull();
+
+        await pactum
+          .spec()
+          .post('/auth/logout')
+          .withHeaders('Cookie', `refreshToken=${rawRefreshToken}`)
+          .expectStatus(200);
+
+        const recordAfter = await refreshTokenModel.findOne({
+          tokenHash: hash,
+        });
+        expect(recordAfter).not.toBeNull();
+        expect(recordAfter!.revokedAt).not.toBeNull();
+      });
+
+      it('should not alter other sessions in DB when logging out with an invalid token', async () => {
+        const { rawRefreshToken } = await getValidSession();
+        const hash = createHash('sha256').update(rawRefreshToken).digest('hex');
+
+        // Logout with a different/invalid token
+        await pactum
+          .spec()
+          .post('/auth/logout')
+          .withHeaders('Cookie', 'refreshToken=some-other-invalid-token')
+          .expectStatus(200);
+
+        // Active session should remain active
+        const record = await refreshTokenModel.findOne({ tokenHash: hash });
+        expect(record).not.toBeNull();
+        expect(record!.revokedAt).toBeNull();
+      });
+    });
+  });
+
+  describe('PATCH /auth/change-password', () => {
+    const testUser = {
+      name: 'Change Password Tester',
+      email: 'change-pw@example.com',
+      password: 'OldPassword123!',
+    };
+    let userId: string;
+
+    const getAuthToken = async (
+      password: string = testUser.password,
+    ): Promise<string> => {
+      let accessToken = '';
+      await pactum
+        .spec()
+        .post('/auth/login')
+        .withBody({
+          email: testUser.email,
+          password,
+        })
+        .expectStatus(200)
+        .expect((ctx) => {
+          accessToken = (ctx.res.body as { access_token: string }).access_token;
+        });
+      return accessToken;
+    };
+
+    beforeEach(async () => {
+      // Clear data for our test user
+      await userModel.deleteMany({ email: testUser.email });
+
+      const hash = await argon.hash(testUser.password);
+      const user = await userModel.create({
+        name: testUser.name,
+        email: testUser.email,
+        hash,
+      });
+      userId = user._id.toString();
+
+      // Clear refresh tokens
+      await refreshTokenModel.deleteMany({ userId: user._id });
+    });
+
+    describe('input validation', () => {
+      it('should reject when oldPassword is missing → 400', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(400);
+      });
+
+      it('should reject when newPassword is missing → 400', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+          })
+          .expectStatus(400);
+      });
+
+      it('should reject when newPassword is too weak → 400', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: '123',
+          })
+          .expectStatus(400);
+      });
+    });
+
+    describe('authentication', () => {
+      it('should reject when JWT bearer token is missing → 401', async () => {
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(401);
+      });
+
+      it('should reject when JWT bearer token is invalid or expired → 401', async () => {
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', 'Bearer invalid-token')
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(401);
+      });
+    });
+
+    describe('business logic', () => {
+      it('should reject when oldPassword is incorrect → 401', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: 'wrong-old-password',
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(401);
+      });
+
+      it('should change password successfully on happy path → 200', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(200)
+          .expectJson({ success: true });
+      });
+    });
+
+    describe('side effects', () => {
+      it('should update the user password hash in DB on success', async () => {
+        const token = await getAuthToken();
+
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(200);
+
+        const updatedUser = await userModel.findById(userId);
+        expect(updatedUser).not.toBeNull();
+
+        const oldMatches = await argon.verify(
+          updatedUser!.hash,
+          testUser.password,
+        );
+        expect(oldMatches).toBe(false);
+
+        const newMatches = await argon.verify(
+          updatedUser!.hash,
+          'NewPassword123!',
+        );
+        expect(newMatches).toBe(true);
+      });
+
+      it('should revoke all existing user sessions/refresh tokens in DB on success', async () => {
+        // Create an active session by logging in and generating a refresh token
+        let firstRawRefreshToken = '';
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: testUser.email,
+            password: testUser.password,
+          })
+          .expectStatus(200)
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            if (setCookie && setCookie[0]) {
+              const match = setCookie[0].match(/refreshToken=([^;]+)/);
+              if (match) {
+                firstRawRefreshToken = match[1];
+              }
+            }
+          });
+
+        expect(firstRawRefreshToken).not.toBe('');
+        const hash = createHash('sha256')
+          .update(firstRawRefreshToken)
+          .digest('hex');
+
+        const recordBefore = await refreshTokenModel.findOne({
+          tokenHash: hash,
+        });
+        expect(recordBefore).not.toBeNull();
+        expect(recordBefore!.revokedAt).toBeNull();
+
+        // Perform password change
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(200);
+
+        // Verify session revocation side effect
+        const recordAfter = await refreshTokenModel.findOne({
+          tokenHash: hash,
+        });
+        expect(recordAfter).not.toBeNull();
+        expect(recordAfter!.revokedAt).not.toBeNull();
+      });
+
+      it('should no longer allow login with the old password', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(200);
+
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: testUser.email,
+            password: testUser.password,
+          })
+          .expectStatus(401);
+      });
+
+      it('should allow login with the new password', async () => {
+        const token = await getAuthToken();
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: testUser.password,
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(200);
+
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: testUser.email,
+            password: 'NewPassword123!',
+          })
+          .expectStatus(200);
+      });
+
+      it('should not update user password hash in DB on failure', async () => {
+        const token = await getAuthToken();
+        const initialUser = await userModel.findById(userId);
+        const initialHash = initialUser!.hash;
+
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: 'wrong-old-password',
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(401);
+
+        const finalUser = await userModel.findById(userId);
+        expect(finalUser!.hash).toBe(initialHash);
+      });
+
+      it('should not revoke existing user sessions/refresh tokens in DB on failure', async () => {
+        // Create an active session
+        let firstRawRefreshToken = '';
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: testUser.email,
+            password: testUser.password,
+          })
+          .expectStatus(200)
+          .expect((ctx) => {
+            const setCookie = ctx.res.headers['set-cookie'];
+            if (setCookie && setCookie[0]) {
+              const match = setCookie[0].match(/refreshToken=([^;]+)/);
+              if (match) {
+                firstRawRefreshToken = match[1];
+              }
+            }
+          });
+
+        expect(firstRawRefreshToken).not.toBe('');
+        const hash = createHash('sha256')
+          .update(firstRawRefreshToken)
+          .digest('hex');
+
+        const token = await getAuthToken();
+
+        // Attempt change password with wrong old password
+        await pactum
+          .spec()
+          .patch('/auth/change-password')
+          .withHeaders('Authorization', `Bearer ${token}`)
+          .withBody({
+            oldPassword: 'wrong-old-password',
+            newPassword: 'NewPassword123!',
+          })
+          .expectStatus(401);
+
+        // Verify session remains active
+        const record = await refreshTokenModel.findOne({ tokenHash: hash });
+        expect(record!.revokedAt).toBeNull();
+      });
+    });
+  });
 });

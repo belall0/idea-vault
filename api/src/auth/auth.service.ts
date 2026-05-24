@@ -72,16 +72,6 @@ export class AuthService {
     return { accessToken, rawRefreshToken: newRawRefreshToken };
   }
 
-  public async logout(rawRefreshToken: string): Promise<void> {
-    try {
-      const record =
-        await this.refreshTokenService.validateRefreshToken(rawRefreshToken);
-      await this.refreshTokenService.revokeEntireSession(record.sessionId);
-    } catch {
-      // Token already expired, revoked, or not found — logout is still successful
-    }
-  }
-
   public async changePassword(userId: string, dto: ChangePasswordDto) {
     const user = await this.usersService.findById(userId);
     if (!user) {
@@ -100,6 +90,16 @@ export class AuthService {
     // Any device still holding a refresh token from before this moment
     // should be forced to re-authenticate.
     await this.refreshTokenService.revokeAllUserSessions(userId);
+  }
+
+  public async logout(rawRefreshToken: string): Promise<void> {
+    try {
+      const record =
+        await this.refreshTokenService.validateRefreshToken(rawRefreshToken);
+      await this.refreshTokenService.revokeEntireSession(record.sessionId);
+    } catch {
+      // Token already expired, revoked, or not found — logout is still successful
+    }
   }
 
   private signToken(userId: string): Promise<string> {

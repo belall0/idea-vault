@@ -75,6 +75,17 @@ export class AuthController {
     return { access_token: accessToken };
   }
 
+  @Patch('change-password')
+  @UseGuards(JwtGuard)
+  public async changePassword(
+    @GetUser('id') userId: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    await this.authService.changePassword(userId, changePasswordDto);
+
+    return { success: true };
+  }
+
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   public async logout(
@@ -91,17 +102,6 @@ export class AuthController {
     res.clearCookie(this.config.authOptions.refreshTokenCookie, {
       path: this.config.authOptions.cookieOptions.path,
     });
-
-    return { success: true };
-  }
-
-  @Patch('change-password')
-  @UseGuards(JwtGuard)
-  public async changePassword(
-    @GetUser('id') userId: string,
-    @Body() changePasswordDto: ChangePasswordDto,
-  ) {
-    await this.authService.changePassword(userId, changePasswordDto);
 
     return { success: true };
   }
