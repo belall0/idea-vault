@@ -3,53 +3,60 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-function Header() {
+interface HeaderProps {
+  leading?: React.ReactNode;
+}
+
+function Header({ leading }: HeaderProps) {
   const { user } = useAuth();
 
   return (
-    <header className="border-border bg-background border-b">
-      <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
+    <header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-30 border-b backdrop-blur">
+      <div className="flex h-14 items-center gap-4 px-4 md:px-6">
+        {/* Leading content (sidebar trigger when authenticated) */}
+        {leading}
+
         {/* Logo */}
         <div className="flex flex-1 items-center justify-start">
           <Link
             to="/"
             className="text-foreground flex items-center gap-2 text-lg font-semibold"
           >
-            <Lightbulb className="h-5 w-5" />
+            <Lightbulb className="size-5" />
             <span>IdeaDrop</span>
           </Link>
         </div>
 
         {/* Nav */}
-        <nav className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
+        <nav className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" asChild>
             <Link to="/ideas">Ideas</Link>
           </Button>
 
           {user && (
-            <Button asChild>
+            <Button size="sm" asChild>
               <Link to="/ideas/new" className="flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
-                <span>New Idea</span>
+                <PlusCircle data-icon="inline-start" />
+                <span className="hidden sm:inline">New Idea</span>
               </Link>
             </Button>
           )}
         </nav>
 
         {/* Auth */}
-        <div className="flex flex-1 items-center justify-end gap-2">
+        <div className="flex items-center gap-2">
           {!user ? (
             <>
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" size="sm" asChild>
                 <Link to="/login">Login</Link>
               </Button>
 
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <Link to="/register">Register</Link>
               </Button>
             </>
           ) : (
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" size="sm" asChild>
               <Link to="/profile">Profile</Link>
             </Button>
           )}

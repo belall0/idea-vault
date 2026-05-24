@@ -1,5 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_protected/profile")({
   component: ProfilePage,
@@ -8,21 +19,64 @@ export const Route = createFileRoute("/_protected/profile")({
 function ProfilePage() {
   const { user, clearAuth } = useAuth();
 
-  return (
-    <div className="p-8 max-w-2xl mx-auto mt-10 shadow rounded bg-white">
-      <h1 className="text-2xl font-bold mb-4">Your Profile</h1>
-      <div className="space-y-2">
-        <p><strong>ID:</strong> {user?.id}</p>
-        <p><strong>Name:</strong> {user?.name}</p>
-        <p><strong>Email:</strong> {user?.email}</p>
-      </div>
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
-      <button
-        onClick={clearAuth}
-        className="mt-6 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-      >
-        Sign Out
-      </button>
+  return (
+    <div className="py-4 md:py-8">
+      <Card className="mx-auto max-w-2xl">
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <Avatar className="size-16">
+              <AvatarFallback className="text-lg">
+                {user?.name ? getInitials(user.name) : "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col gap-1">
+              <CardTitle className="text-2xl">Your Profile</CardTitle>
+              <CardDescription>Manage your account information</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-muted-foreground text-sm font-medium">
+                ID
+              </span>
+              <span className="text-foreground font-mono text-sm">
+                {user?.id}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-muted-foreground text-sm font-medium">
+                Name
+              </span>
+              <span className="text-foreground">{user?.name}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-muted-foreground text-sm font-medium">
+                Email
+              </span>
+              <span className="text-foreground">{user?.email}</span>
+            </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <Button variant="destructive" onClick={clearAuth}>
+            <LogOut data-icon="inline-start" />
+            Sign Out
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

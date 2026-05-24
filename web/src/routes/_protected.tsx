@@ -12,9 +12,5 @@ export const Route = createFileRoute("/_protected")({
 });
 
 function ProtectedLayout() {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Outlet />
-    </div>
-  );
+  return <Outlet />;
 }
