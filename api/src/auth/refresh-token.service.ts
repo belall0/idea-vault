@@ -82,11 +82,22 @@ export class RefreshTokenService {
     const rawToken = this.generateRawToken();
     const newTokenHash = this.hash(rawToken);
 
-    // Mark the old token as consumed and link it to its replacement
-    await this.refreshTokenModel.findByIdAndUpdate(oldRecord._id, {
-      revokedAt: new Date(),
-      replacedByTokenHash: newTokenHash,
-    });
+    // Mark the old token as consumed and link it to its replacement atomically
+    const updatedOldRecord = await this.refreshTokenModel.findOneAndUpdate(
+      { _id: oldRecord._id, revokedAt: null },
+      {
+        revokedAt: new Date(),
+        replacedByTokenHash: newTokenHash,
+      },
+      { new: true },
+    );
+
+    if (!updatedOldRecord) {
+      // If no document matches, it means the token was already consumed.
+      // This is a reuse attempt! Revoke the entire session family immediately.
+      await this.revokeEntireSession(oldRecord.sessionId);
+      throw new UnauthorizedException();
+    }
 
     // Issue the new token — same sessionId preserves the family link
     await this.refreshTokenModel.create({
