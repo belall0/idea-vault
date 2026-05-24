@@ -162,6 +162,40 @@ it('should not create refresh token on register');
 it('should revoke all sessions after password change');
 ```
 
+#### Assert status codes for errors, body shape for success
+
+**For error cases: assert only the status code.**
+
+```typescript
+// ✅ correct
+.expectStatus(401)
+
+// ❌ brittle — error message wording is an implementation detail
+.expectStatus(401)
+.expectJson({ message: 'Invalid credentials', error: 'Unauthorized', statusCode: 401 })
+```
+
+Error message text can change for legitimate reasons (rewording, i18n, refactoring).
+A test that breaks because you changed `'Invalid credentials'` to `'Wrong credentials'`
+is noise, not signal. The status code is the contract — assert that.
+
+**For success cases: assert the response body shape.**
+
+```typescript
+// ✅ correct — the response shape IS the contract for the client
+.expectStatus(201)
+.expectJsonLike({
+  message: 'User registered successfully',
+  user: { name: 'Belal', email: 'belal@example.com' },
+})
+```
+
+One additional reason to avoid asserting error message bodies on auth endpoints
+specifically: if your service returns the same message for "email not found" and
+"wrong password" (to avoid user enumeration), asserting on that exact string means
+a refactor that accidentally splits those messages would still pass the test.
+Status code only keeps the test honest.
+
 #### Checking side effects directly in DB
 
 ```typescript
@@ -176,10 +210,16 @@ it('should persist user to database', async () => {
   await pactum.spec().post('/auth/register').withBody({...}).expectStatus(201);
   const user = await userModel.findOne({ email: 'test@test.com' });
   expect(user).not.toBeNull();
-  expect(user.hash).toBeDefined();      // hash was stored
+  expect(user.hash).toBeDefined();       // hash was stored
   expect(user.password).toBeUndefined(); // plaintext was NOT stored
 });
 ```
+
+Using DB models directly in test files is correct and expected for integration tests.
+The HTTP response shows what the API promises the client; the DB query verifies what
+actually happened internally. Use DB queries for things the response doesn't expose:
+hashed passwords, revoked tokens, session state, timestamps. Don't use DB queries
+to re-assert things the response already confirmed.
 
 ---
 
@@ -202,4 +242,6 @@ Always produce in this order for the initial analysis:
 2. **The skeleton structure** (a code block containing nested `describe` blocks and empty `it()` should-statements matching the table)
 3. **A note on any side effects that need DB queries to verify**
 
-Do NOT output the full implementation code in the initial step. Only write or generate the full test code after the user has reviewed the structure and explicitly instructed you to generate/write the test suite.
+Do NOT output the full implementation code in the initial step. Only write or generate
+the full test code after the user has reviewed the structure and explicitly instructed
+you to generate/write the test suite.

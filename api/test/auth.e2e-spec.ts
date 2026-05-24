@@ -147,4 +147,149 @@ describe('Auth e2e', () => {
       });
     });
   });
+
+  describe('POST /auth/login', () => {
+    const loginUser = {
+      name: 'Login Tester',
+      email: 'login-test@example.com',
+      password: 'Password123!',
+    };
+
+    beforeAll(async () => {
+      // Seed the database with a user for login testing
+      const hash = await argon.hash(loginUser.password);
+      await userModel.create({
+        name: loginUser.name,
+        email: loginUser.email,
+        hash,
+      });
+    });
+
+    describe('input validation', () => {
+      it('should reject login when email is missing → 400', async () => {
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            password: loginUser.password,
+          })
+          .expectStatus(400);
+      });
+
+      it('should reject login when email format is invalid → 400', async () => {
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: 'invalid-email',
+            password: loginUser.password,
+          })
+          .expectStatus(400);
+      });
+
+      it('should reject login when password is missing → 400', async () => {
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: loginUser.email,
+          })
+          .expectStatus(400);
+      });
+    });
+
+    describe('business logic', () => {
+      it('should reject login when email does not exist → 401', async () => {
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: 'nonexistent@example.com',
+            password: loginUser.password,
+          })
+          .expectStatus(401);
+      });
+
+      it('should reject login when password is incorrect → 401', async () => {
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: loginUser.email,
+            password: 'wrongpassword',
+          })
+          .expectStatus(401);
+      });
+
+      it('should login user, return access token and set refresh token cookie → 200', async () => {
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: loginUser.email,
+            password: loginUser.password,
+          })
+          .expectStatus(200)
+          .expect((ctx) => {
+            const body = ctx.res.body as { access_token: string };
+            expect(body.access_token).toBeDefined();
+            expect(typeof body.access_token).toBe('string');
+
+            const setCookie = ctx.res.headers['set-cookie'];
+            expect(setCookie).toBeDefined();
+            expect(setCookie![0]).toContain('refreshToken=');
+          });
+      });
+    });
+
+    describe('side effects', () => {
+      it('should persist a new refresh token record associated with the user session in the DB', async () => {
+        // Clear all refresh tokens for this user first to have a clean slate
+        const user = await userModel.findOne({ email: loginUser.email });
+        expect(user).not.toBeNull();
+        await refreshTokenModel.deleteMany({ userId: user!._id });
+
+        // Perform login
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: loginUser.email,
+            password: loginUser.password,
+          })
+          .expectStatus(200);
+
+        // Verify the DB side effect
+        const tokens = await refreshTokenModel.find({ userId: user!._id });
+        expect(tokens.length).toBe(1);
+        expect(tokens[0].revokedAt).toBeNull();
+      });
+
+      it('should not create any refresh token records in the DB on login failure', async () => {
+        const user = await userModel.findOne({ email: loginUser.email });
+        expect(user).not.toBeNull();
+
+        // Count tokens before failure
+        const initialCount = await refreshTokenModel.countDocuments({
+          userId: user!._id,
+        });
+
+        // Attempt login with wrong password
+        await pactum
+          .spec()
+          .post('/auth/login')
+          .withBody({
+            email: loginUser.email,
+            password: 'wrongpassword',
+          })
+          .expectStatus(401);
+
+        // Verify counts are unchanged
+        const finalCount = await refreshTokenModel.countDocuments({
+          userId: user!._id,
+        });
+        expect(finalCount).toBe(initialCount);
+      });
+    });
+  });
 });
