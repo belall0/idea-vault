@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { AppConfigService } from '../app-config/app-config.service';
@@ -18,6 +19,7 @@ import { JwtGuard } from './guards';
 import { GetUser } from './decorators';
 import { RegisterDto, LoginDto, ChangePasswordDto } from './types';
 
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('auth')
 export class AuthController {
   constructor(
