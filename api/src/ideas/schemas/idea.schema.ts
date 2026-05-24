@@ -17,6 +17,9 @@ export class Idea {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   userId: User;
+
+  @Prop({ type: Boolean, default: false })
+  featured: boolean;
 }
 
 export const IdeaSchema = SchemaFactory.createForClass(Idea);
