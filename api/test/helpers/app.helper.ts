@@ -26,13 +26,9 @@ export async function buildTestApp(port: number): Promise<INestApplication> {
   await app.init();
   await app.listen(port);
 
-  // Drop the database before tests run to ensure a clean slate
   const connection = app.get<Connection>(getConnectionToken());
   await connection.dropDatabase();
 
-  // Re-sync all Mongoose model indexes after dropping the DB.
-  // Without this, unique constraints (e.g. the email unique index on User)
-  // are lost and won't be enforced during the test run.
   for (const model of Object.values(connection.models)) {
     await model.syncIndexes();
   }

@@ -86,9 +86,6 @@ export class AuthService {
     const hash = await argon.hash(dto.newPassword);
     await this.usersService.updateHash(userId, hash);
 
-    // Critical: a password change must kill all existing sessions.
-    // Any device still holding a refresh token from before this moment
-    // should be forced to re-authenticate.
     await this.refreshTokenService.revokeAllUserSessions(userId);
   }
 
@@ -98,7 +95,7 @@ export class AuthService {
         await this.refreshTokenService.validateRefreshToken(rawRefreshToken);
       await this.refreshTokenService.revokeEntireSession(record.sessionId);
     } catch {
-      // Token already expired, revoked, or not found — logout is still successful
+      // Ignore if token already invalid/expired
     }
   }
 

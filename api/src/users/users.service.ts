@@ -5,17 +5,23 @@ import {
   BadRequestException,
   UnauthorizedException,
   NotFoundException,
+  OnApplicationBootstrap,
 } from '@nestjs/common';
 import * as argon from 'argon2';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto, EditUserDto } from './types';
+import { CreateUserDto, EditUserDto, UserRole } from './types';
+import { DefaultAdmin } from './types/constants/default-admin.constant';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnApplicationBootstrap {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+
+  public async onApplicationBootstrap(): Promise<void> {
+    await this.createDefaultAdmin();
+  }
 
   public async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     try {
@@ -85,5 +91,26 @@ export class UsersService {
 
   public async updateHash(id: string, hash: string): Promise<void> {
     await this.userModel.findOneAndUpdate({ _id: id }, { hash }).exec();
+  }
+
+  private async createDefaultAdmin(): Promise<void> {
+    const { name, email, password } = DefaultAdmin;
+
+    try {
+      const existingAdmin = await this.findByEmail(email);
+
+      if (!existingAdmin) {
+        const hash = await argon.hash(password);
+        const adminUser = new this.userModel({
+          name,
+          email,
+          hash,
+          role: UserRole.ADMIN,
+        });
+        await adminUser.save();
+      }
+    } catch (error) {
+      console.error('[Startup] Failed to create default admin account:', error);
+    }
   }
 }

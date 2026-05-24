@@ -16,10 +16,6 @@ export class RefreshTokenService {
     private refreshTokenModel: Model<RefreshTokenDocument>,
   ) {}
 
-  /**
-   * Called once at login. Generates a new token family (new sessionId).
-   * Returns the raw token — this is the only time plaintext exists.
-   */
   public async createRefreshToken(
     userId: string,
   ): Promise<{ rawToken: string; sessionId: string }> {
@@ -39,50 +35,35 @@ export class RefreshTokenService {
     return { rawToken, sessionId };
   }
 
-  /**
-   * Called at every POST /auth/refresh.
-   * Validates the token, detects reuse, returns the record if valid.
-   * THROWS on any invalid state — caller should not catch selectively.
-   */
   public async validateRefreshToken(
     rawToken: string,
   ): Promise<RefreshTokenDocument> {
     const tokenHash = this.hash(rawToken);
     const record = await this.refreshTokenModel.findOne({ tokenHash });
 
-    // Case 1: Token doesn't exist at all — could be garbage, could be forged
     if (!record) {
       throw new UnauthorizedException();
     }
 
-    // Case 2: Token was already used — THIS IS THE REUSE DETECTION SIGNAL.
-    // Someone is replaying a consumed token. Assume the session is compromised.
-    // Revoke the entire family immediately.
     if (record.revokedAt !== null) {
+      // Reuse detection
       await this.revokeEntireSession(record.sessionId);
       throw new UnauthorizedException();
     }
 
-    // Case 3: Token exists and is active, but has expired
     if (record.expiresAt < new Date()) {
       throw new UnauthorizedException();
     }
 
-    // All checks passed
     return record;
   }
 
-  /**
-   * Called immediately after validateRefreshToken succeeds.
-   * Atomically: marks old token as consumed, issues new token in same session family.
-   */
   public async rotateRefreshToken(
     oldRecord: RefreshTokenDocument,
   ): Promise<string> {
     const rawToken = this.generateRawToken();
     const newTokenHash = this.hash(rawToken);
 
-    // Mark the old token as consumed and link it to its replacement atomically
     const updatedOldRecord = await this.refreshTokenModel.findOneAndUpdate(
       { _id: oldRecord._id, revokedAt: null },
       {
@@ -93,17 +74,14 @@ export class RefreshTokenService {
     );
 
     if (!updatedOldRecord) {
-      // If no document matches, it means the token was already consumed.
-      // This is a reuse attempt! Revoke the entire session family immediately.
-      await this.revokeEntireSession(oldRecord.sessionId);
+      await this.revokeEntireSession(oldRecord.sessionId); // Concurrent reuse detection
       throw new UnauthorizedException();
     }
 
-    // Issue the new token — same sessionId preserves the family link
     await this.refreshTokenModel.create({
       tokenHash: newTokenHash,
       userId: oldRecord.userId,
-      sessionId: oldRecord.sessionId, // ← same family
+      sessionId: oldRecord.sessionId,
       expiresAt: this.sevenDaysFromNow(),
       revokedAt: null,
       replacedByTokenHash: null,
@@ -112,10 +90,6 @@ export class RefreshTokenService {
     return rawToken;
   }
 
-  /**
-   * Revokes all active tokens in a session family.
-   * Used for: normal logout, AND reuse detection (compromise response).
-   */
   public async revokeEntireSession(sessionId: string): Promise<void> {
     await this.refreshTokenModel.updateMany(
       { sessionId, revokedAt: null },
@@ -123,10 +97,6 @@ export class RefreshTokenService {
     );
   }
 
-  /**
-   * Revokes all sessions for a user across all devices.
-   * Used for: password change, admin-forced logout.
-   */
   public async revokeAllUserSessions(userId: string): Promise<void> {
     await this.refreshTokenModel.updateMany(
       { userId: new Types.ObjectId(userId), revokedAt: null },
