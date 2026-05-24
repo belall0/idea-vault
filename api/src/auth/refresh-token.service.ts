@@ -89,7 +89,7 @@ export class RefreshTokenService {
         revokedAt: new Date(),
         replacedByTokenHash: newTokenHash,
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     if (!updatedOldRecord) {

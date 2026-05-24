@@ -31,7 +31,7 @@ export class IdeasService {
     updateIdeaDto: UpdateIdeaDto,
   ): Promise<IdeaDocument> {
     const updated = await this.ideaModel
-      .findByIdAndUpdate(id, updateIdeaDto, { new: true })
+      .findByIdAndUpdate(id, updateIdeaDto, { returnDocument: 'after' })
       .exec();
     if (!updated) {
       throw new NotFoundException(`Idea #${id} not found`);

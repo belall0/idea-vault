@@ -47,7 +47,6 @@ function LoginForm() {
     },
     onSuccess: (data) => {
       setAuth(data.access_token, data.user);
-      toast.success("Logged in successfully");
       form.reset();
       navigate({ to: "/" });
     },
