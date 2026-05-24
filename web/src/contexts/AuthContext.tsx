@@ -28,6 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Interceptors registered once, reads from module-level getToken(), not state
   // useLayoutEffect ensures they're registered before any child renders fire requests
   useLayoutEffect(() => {
+    // to prevent multiple refresh requests at the same time
+    let refreshPromise: Promise<{ access_token: string }> | null = null;
+
     const requestInterceptor = apiClient.interceptors.request.use(
       (config) => {
         const token = getToken();
@@ -52,7 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           originalRequest._retry = true;
 
           try {
-            const { access_token } = await refresh();
+            if (!refreshPromise) {
+              refreshPromise = refresh().finally(() => {
+                refreshPromise = null;
+              });
+            }
+
+            const { access_token } = await refreshPromise;
 
             applyToken(access_token);
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
