@@ -50,7 +50,7 @@ export class AuthService {
     }
 
     const userId = user._id.toString();
-    const accessToken = await this.signToken(userId, user.email);
+    const accessToken = await this.signToken(userId);
 
     const { rawToken: rawRefreshToken } =
       await this.refreshTokenService.createRefreshToken(userId);
@@ -67,10 +67,7 @@ export class AuthService {
     const newRawRefreshToken =
       await this.refreshTokenService.rotateRefreshToken(record);
 
-    const accessToken = await this.signToken(
-      record.userId.toString(),
-      (await this.usersService.findById(record.userId.toString()))!.email,
-    );
+    const accessToken = await this.signToken(record.userId.toString());
 
     return { accessToken, rawRefreshToken: newRawRefreshToken };
   }
@@ -105,8 +102,8 @@ export class AuthService {
     await this.refreshTokenService.revokeAllUserSessions(userId);
   }
 
-  private signToken(userId: string, email: string): Promise<string> {
-    const payload = { sub: userId, email };
+  private signToken(userId: string): Promise<string> {
+    const payload = { sub: userId };
     const options: JwtSignOptions = {
       secret: this.appConfigService.authOptions.jwtSecret,
       expiresIn: this.appConfigService.authOptions.expiresIn,

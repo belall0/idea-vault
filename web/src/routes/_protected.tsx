@@ -1,13 +1,10 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_protected")({
-  beforeLoad: ({ context, location }) => {
+  beforeLoad: ({ context }) => {
     if (!context.auth.user) {
       throw redirect({
         to: "/login",
-        search: {
-          redirect: location.href,
-        },
       });
     }
   },
@@ -16,7 +13,7 @@ export const Route = createFileRoute("/_protected")({
 
 function ProtectedLayout() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Outlet />
     </div>
   );

@@ -2,7 +2,11 @@ import {
   Injectable,
   ConflictException,
   InternalServerErrorException,
+  BadRequestException,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
+import * as argon from 'argon2';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -21,11 +25,7 @@ export class UsersService {
       const duplicateKeyErrorCode = 11000;
 
       if ((error as { code?: number }).code === duplicateKeyErrorCode) {
-        const duplicatedField = Object.keys(
-          (error as { keyPattern: Record<string, unknown> }).keyPattern,
-        )[0];
-
-        throw new ConflictException(`${duplicatedField} already exists`);
+        throw new ConflictException('Registration failed');
       }
 
       throw new InternalServerErrorException();
@@ -44,15 +44,36 @@ export class UsersService {
     id: string,
     editUserDto: EditUserDto,
   ): Promise<UserDocument | null> {
-    if (editUserDto.email) {
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (editUserDto.email && editUserDto.email !== user.email) {
+      if (!editUserDto.currentPassword) {
+        throw new BadRequestException(
+          'Password confirmation required to change email',
+        );
+      }
+
+      const pwMatches = await argon.verify(
+        user.hash,
+        editUserDto.currentPassword,
+      );
+      if (!pwMatches) {
+        throw new UnauthorizedException('Incorrect password');
+      }
+
       const existingUser = await this.findByEmail(editUserDto.email);
       if (existingUser && existingUser._id.toString() !== id) {
         throw new ConflictException('email already exists');
       }
     }
 
+    const { currentPassword: _, ...updateData } = editUserDto;
+
     return this.userModel
-      .findOneAndUpdate({ _id: id }, editUserDto, {
+      .findOneAndUpdate({ _id: id }, updateData, {
         returnDocument: 'after',
       })
       .exec();

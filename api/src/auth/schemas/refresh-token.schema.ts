@@ -25,7 +25,7 @@ export class RefreshToken {
   sessionId: string;
 
   // When this token stops being valid (enforced by our code, not MongoDB)
-  @Prop({ required: true })
+  @Prop({ required: true, index: { expires: '30d' } })
   expiresAt: Date;
 
   // Set when this token is rotated or revoked. Null = still active.
