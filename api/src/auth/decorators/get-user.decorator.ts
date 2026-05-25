@@ -10,7 +10,4 @@ export const GetUser = createParamDecorator(
 
     return key ? user[key] : user;
   },
-) as {
-  (): ParameterDecorator;
-  <K extends keyof AuthenticatedUser>(key: K): ParameterDecorator;
-};
+);

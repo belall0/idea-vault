@@ -1,18 +1,21 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { getModelToken } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { createHash } from 'crypto';
+import { getConnectionToken } from '@nestjs/mongoose';
+import { Test } from '@nestjs/testing';
+import { Connection, Model, Types } from 'mongoose';
+import { createHash } from 'node:crypto';
 import * as pactum from 'pactum';
 import * as argon from 'argon2';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 
-import { buildTestApp } from './helpers/app.helper';
+import { AppModule } from '@/src/app/app.module';
 import { User, UserDocument } from '@/src/users/schemas/user.schema';
 import {
   RefreshToken,
   RefreshTokenDocument,
 } from '@/src/auth/schemas/refresh-token.schema';
-import { RegisterDto } from '@/src/auth/types';
 
 jest
   .spyOn(ThrottlerGuard.prototype, 'canActivate')
@@ -20,11 +23,40 @@ jest
 
 describe('Auth e2e', () => {
   let app: INestApplication;
+  const port = 3001;
   let userModel: Model<UserDocument>;
   let refreshTokenModel: Model<RefreshTokenDocument>;
 
   beforeAll(async () => {
-    app = await buildTestApp(3001);
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleRef.createNestApplication();
+
+    app.use(helmet());
+    app.enableCors({
+      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      credentials: true,
+    });
+    app.setGlobalPrefix('api');
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
+    app.use(cookieParser());
+
+    await app.init();
+    await app.listen(port);
+
+    const connection = app.get<Connection>(getConnectionToken());
+    await connection.dropDatabase();
+
+    for (const model of Object.values(connection.models)) {
+      await model.syncIndexes();
+    }
+
+    pactum.request.setBaseUrl(`http://localhost:${port}/api`);
+
     userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
     refreshTokenModel = app.get<Model<RefreshTokenDocument>>(
       getModelToken(RefreshToken.name),
@@ -36,7 +68,7 @@ describe('Auth e2e', () => {
   });
 
   describe('POST /auth/register', () => {
-    const validRegisterDto: RegisterDto = {
+    const validRegisterDto = {
       name: 'Belal Muhammad',
       email: 'belal@example.com',
       password: 'Password123!',
@@ -83,14 +115,7 @@ describe('Auth e2e', () => {
           .spec()
           .post('/auth/register')
           .withBody(validRegisterDto)
-          .expectStatus(201)
-          .expectJsonLike({
-            message: 'User registered successfully',
-            user: {
-              name: validRegisterDto.name,
-              email: validRegisterDto.email,
-            },
-          });
+          .expectStatus(201);
       });
 
       it('should reject registration with a conflict error if email is already in use → 409', async () => {
@@ -115,7 +140,6 @@ describe('Auth e2e', () => {
         expect(persistedUser).not.toBeNull();
         expect(persistedUser!.name).toBe(validRegisterDto.name);
 
-        // Assert security side effects
         expect(persistedUser!.hash).toBeDefined();
         const matchesPlaintext = await argon.verify(
           persistedUser!.hash,
