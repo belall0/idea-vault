@@ -11,9 +11,11 @@ export default function GuestHeader() {
         <div className="flex flex-1 items-center justify-start">
           <Link
             to="/"
-            className="text-foreground flex items-center gap-2 text-lg font-semibold"
+            className="text-foreground group flex items-center gap-2.5 text-lg font-semibold"
           >
-            <Lightbulb className="size-5" />
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 transition-all duration-300 group-hover:scale-105 dark:bg-amber-500/20">
+              <Lightbulb className="size-4.5" />
+            </div>
             <span>IdeaVault</span>
           </Link>
         </div>

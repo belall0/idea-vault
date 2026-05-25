@@ -3,8 +3,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, Controller } from "react-hook-form";
-import { toast } from "sonner";
-import { loginFormSchema, type LoginFormValues } from "@/features/auth/auth-schemas";
+import {
+  loginFormSchema,
+  type LoginFormValues,
+} from "@/features/auth/auth-schemas";
 import { Button } from "@/shared/ui/button";
 import {
   Card,
@@ -15,12 +17,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { login } from "@/features/auth/auth-api";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/shared/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { getCurrentUser } from "@/features/auth/auth-users-api";
 import { useAuth } from "@/features/auth/auth-context";
@@ -49,10 +46,6 @@ function LoginForm() {
       setAuth(data.access_token, data.user);
       form.reset();
       navigate({ to: "/" });
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || "Failed to login";
-      toast.error(Array.isArray(message) ? message[0] : message);
     },
   });
 
