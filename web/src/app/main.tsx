@@ -12,8 +12,10 @@ function InnerApp() {
   const auth = useAuth();
 
   useEffect(() => {
-    router.invalidate();
-  }, [auth.user, auth.accessToken]);
+    if (!auth.isLoading) {
+      router.invalidate();
+    }
+  }, [auth.user, auth.accessToken, auth.isLoading]);
 
   if (auth.isLoading) {
     return (

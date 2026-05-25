@@ -4,6 +4,7 @@ import EditIdeaPage from "@/pages/EditIdeaPage";
 
 export const Route = createFileRoute("/_authenticated/ideas/$ideaid/edit")({
   beforeLoad: async ({ params, context }) => {
+    if (!context.auth) return;
     const idea = await context.queryClient.ensureQueryData(
       ideaDetailQueryOptions(params.ideaid),
     );
