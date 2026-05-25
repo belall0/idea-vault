@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+
 import { getIdea, getIdeas } from "@/features/ideas/ideas-api";
 
 export const ideasQueryOptions = queryOptions({

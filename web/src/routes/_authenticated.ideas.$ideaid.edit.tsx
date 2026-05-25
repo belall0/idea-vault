@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { ideaDetailQueryOptions } from "@/features/ideas/ideas-queries";
 import EditIdeaPage from "@/pages/EditIdeaPage";
 
-export const Route = createFileRoute("/ideas/$ideaid/edit")({
+export const Route = createFileRoute("/_authenticated/ideas/$ideaid/edit")({
   beforeLoad: async ({ params, context }) => {
     const idea = await context.queryClient.ensureQueryData(
       ideaDetailQueryOptions(params.ideaid),

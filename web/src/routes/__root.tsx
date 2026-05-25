@@ -1,4 +1,5 @@
 import { createRootRouteWithContext } from "@tanstack/react-router";
+
 import RootLayout from "@/app/layouts/RootLayout";
 import type { RouterContext } from "@/shared/types/router-context";
 

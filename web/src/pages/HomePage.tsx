@@ -1,6 +1,6 @@
 import { useAuth } from "@/features/auth/auth-context";
 
-function HomePage() {
+export default function HomePage() {
   const { user } = useAuth();
 
   return (
@@ -21,5 +21,3 @@ function HomePage() {
     </>
   );
 }
-
-export default HomePage;

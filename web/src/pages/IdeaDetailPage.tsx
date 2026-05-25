@@ -4,15 +4,16 @@ import {
   useSuspenseQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+
 import { ideaDetailQueryOptions } from "@/features/ideas/ideas-queries";
 import { deleteIdea } from "@/features/ideas/ideas-api";
 import { useAuth } from "@/features/auth/auth-context";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
-import { toast } from "sonner";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
-function IdeaDetailPage({ ideaid }: { ideaid: string }) {
+export default function IdeaDetailPage({ ideaid }: { ideaid: string }) {
   const { data: idea } = useSuspenseQuery(ideaDetailQueryOptions(ideaid));
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -81,5 +82,3 @@ function IdeaDetailPage({ ideaid }: { ideaid: string }) {
     </div>
   );
 }
-
-export default IdeaDetailPage;

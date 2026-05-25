@@ -1,11 +1,7 @@
 import { Controller, useFormContext } from "react-hook-form";
+
 import { type IdeaFormValues } from "@/features/ideas/ideas-schemas";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/shared/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import {
   InputGroup,

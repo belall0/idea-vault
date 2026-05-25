@@ -9,23 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProtectedRouteImport } from './routes/_protected'
-import { Route as authRouteRouteImport } from './routes/(auth)/route'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as IdeasIndexRouteImport } from './routes/ideas/index'
-import { Route as ProtectedProfileRouteImport } from './routes/_protected.profile'
-import { Route as IdeasNewIndexRouteImport } from './routes/ideas/new/index'
-import { Route as IdeasIdeaidIndexRouteImport } from './routes/ideas/$ideaid/index'
-import { Route as authRegisterIndexRouteImport } from './routes/(auth)/register/index'
-import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
-import { Route as IdeasIdeaidEditRouteImport } from './routes/ideas/$ideaid/edit'
+import { Route as IdeasIndexRouteImport } from './routes/ideas.index'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
+import { Route as AuthRegisterRouteImport } from './routes/_auth.register'
+import { Route as AuthLoginRouteImport } from './routes/_auth.login'
+import { Route as IdeasIdeaidIndexRouteImport } from './routes/ideas.$ideaid.index'
+import { Route as AuthenticatedIdeasNewRouteImport } from './routes/_authenticated.ideas.new'
+import { Route as AuthenticatedIdeasIdeaidEditRouteImport } from './routes/_authenticated.ideas.$ideaid.edit'
 
-const ProtectedRoute = ProtectedRouteImport.update({
-  id: '/_protected',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const authRouteRoute = authRouteRouteImport.update({
-  id: '/(auth)',
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -38,129 +38,128 @@ const IdeasIndexRoute = IdeasIndexRouteImport.update({
   path: '/ideas/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProtectedProfileRoute = ProtectedProfileRouteImport.update({
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => ProtectedRoute,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const IdeasNewIndexRoute = IdeasNewIndexRouteImport.update({
-  id: '/ideas/new/',
-  path: '/ideas/new/',
-  getParentRoute: () => rootRouteImport,
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
 } as any)
 const IdeasIdeaidIndexRoute = IdeasIdeaidIndexRouteImport.update({
   id: '/ideas/$ideaid/',
   path: '/ideas/$ideaid/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const authRegisterIndexRoute = authRegisterIndexRouteImport.update({
-  id: '/register/',
-  path: '/register/',
-  getParentRoute: () => authRouteRoute,
+const AuthenticatedIdeasNewRoute = AuthenticatedIdeasNewRouteImport.update({
+  id: '/ideas/new',
+  path: '/ideas/new',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const authLoginIndexRoute = authLoginIndexRouteImport.update({
-  id: '/login/',
-  path: '/login/',
-  getParentRoute: () => authRouteRoute,
-} as any)
-const IdeasIdeaidEditRoute = IdeasIdeaidEditRouteImport.update({
-  id: '/ideas/$ideaid/edit',
-  path: '/ideas/$ideaid/edit',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedIdeasIdeaidEditRoute =
+  AuthenticatedIdeasIdeaidEditRouteImport.update({
+    id: '/ideas/$ideaid/edit',
+    path: '/ideas/$ideaid/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/profile': typeof ProtectedProfileRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/ideas/': typeof IdeasIndexRoute
-  '/ideas/$ideaid/edit': typeof IdeasIdeaidEditRoute
-  '/login/': typeof authLoginIndexRoute
-  '/register/': typeof authRegisterIndexRoute
+  '/ideas/new': typeof AuthenticatedIdeasNewRoute
   '/ideas/$ideaid/': typeof IdeasIdeaidIndexRoute
-  '/ideas/new/': typeof IdeasNewIndexRoute
+  '/ideas/$ideaid/edit': typeof AuthenticatedIdeasIdeaidEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/profile': typeof ProtectedProfileRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/ideas': typeof IdeasIndexRoute
-  '/ideas/$ideaid/edit': typeof IdeasIdeaidEditRoute
-  '/login': typeof authLoginIndexRoute
-  '/register': typeof authRegisterIndexRoute
+  '/ideas/new': typeof AuthenticatedIdeasNewRoute
   '/ideas/$ideaid': typeof IdeasIdeaidIndexRoute
-  '/ideas/new': typeof IdeasNewIndexRoute
+  '/ideas/$ideaid/edit': typeof AuthenticatedIdeasIdeaidEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/(auth)': typeof authRouteRouteWithChildren
-  '/_protected': typeof ProtectedRouteWithChildren
-  '/_protected/profile': typeof ProtectedProfileRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/ideas/': typeof IdeasIndexRoute
-  '/ideas/$ideaid/edit': typeof IdeasIdeaidEditRoute
-  '/(auth)/login/': typeof authLoginIndexRoute
-  '/(auth)/register/': typeof authRegisterIndexRoute
+  '/_authenticated/ideas/new': typeof AuthenticatedIdeasNewRoute
   '/ideas/$ideaid/': typeof IdeasIdeaidIndexRoute
-  '/ideas/new/': typeof IdeasNewIndexRoute
+  '/_authenticated/ideas/$ideaid/edit': typeof AuthenticatedIdeasIdeaidEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
+    | '/register'
     | '/profile'
     | '/ideas/'
-    | '/ideas/$ideaid/edit'
-    | '/login/'
-    | '/register/'
+    | '/ideas/new'
     | '/ideas/$ideaid/'
-    | '/ideas/new/'
+    | '/ideas/$ideaid/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/profile'
-    | '/ideas'
-    | '/ideas/$ideaid/edit'
     | '/login'
     | '/register'
-    | '/ideas/$ideaid'
+    | '/profile'
+    | '/ideas'
     | '/ideas/new'
+    | '/ideas/$ideaid'
+    | '/ideas/$ideaid/edit'
   id:
     | '__root__'
     | '/'
-    | '/(auth)'
-    | '/_protected'
-    | '/_protected/profile'
+    | '/_auth'
+    | '/_authenticated'
+    | '/_auth/login'
+    | '/_auth/register'
+    | '/_authenticated/profile'
     | '/ideas/'
-    | '/ideas/$ideaid/edit'
-    | '/(auth)/login/'
-    | '/(auth)/register/'
+    | '/_authenticated/ideas/new'
     | '/ideas/$ideaid/'
-    | '/ideas/new/'
+    | '/_authenticated/ideas/$ideaid/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  authRouteRoute: typeof authRouteRouteWithChildren
-  ProtectedRoute: typeof ProtectedRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   IdeasIndexRoute: typeof IdeasIndexRoute
-  IdeasIdeaidEditRoute: typeof IdeasIdeaidEditRoute
   IdeasIdeaidIndexRoute: typeof IdeasIdeaidIndexRoute
-  IdeasNewIndexRoute: typeof IdeasNewIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_protected': {
-      id: '/_protected'
+    '/_authenticated': {
+      id: '/_authenticated'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof ProtectedRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(auth)': {
-      id: '/(auth)'
+    '/_auth': {
+      id: '/_auth'
       path: ''
-      fullPath: ''
-      preLoaderRoute: typeof authRouteRouteImport
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -177,19 +176,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdeasIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_protected/profile': {
-      id: '/_protected/profile'
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
-      preLoaderRoute: typeof ProtectedProfileRouteImport
-      parentRoute: typeof ProtectedRoute
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/ideas/new/': {
-      id: '/ideas/new/'
-      path: '/ideas/new'
-      fullPath: '/ideas/new/'
-      preLoaderRoute: typeof IdeasNewIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/ideas/$ideaid/': {
       id: '/ideas/$ideaid/'
@@ -198,64 +204,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdeasIdeaidIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(auth)/register/': {
-      id: '/(auth)/register/'
-      path: '/register'
-      fullPath: '/register/'
-      preLoaderRoute: typeof authRegisterIndexRouteImport
-      parentRoute: typeof authRouteRoute
+    '/_authenticated/ideas/new': {
+      id: '/_authenticated/ideas/new'
+      path: '/ideas/new'
+      fullPath: '/ideas/new'
+      preLoaderRoute: typeof AuthenticatedIdeasNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/(auth)/login/': {
-      id: '/(auth)/login/'
-      path: '/login'
-      fullPath: '/login/'
-      preLoaderRoute: typeof authLoginIndexRouteImport
-      parentRoute: typeof authRouteRoute
-    }
-    '/ideas/$ideaid/edit': {
-      id: '/ideas/$ideaid/edit'
+    '/_authenticated/ideas/$ideaid/edit': {
+      id: '/_authenticated/ideas/$ideaid/edit'
       path: '/ideas/$ideaid/edit'
       fullPath: '/ideas/$ideaid/edit'
-      preLoaderRoute: typeof IdeasIdeaidEditRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIdeasIdeaidEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
-interface authRouteRouteChildren {
-  authLoginIndexRoute: typeof authLoginIndexRoute
-  authRegisterIndexRoute: typeof authRegisterIndexRoute
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
-const authRouteRouteChildren: authRouteRouteChildren = {
-  authLoginIndexRoute: authLoginIndexRoute,
-  authRegisterIndexRoute: authRegisterIndexRoute,
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
 }
 
-const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
-  authRouteRouteChildren,
-)
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface ProtectedRouteChildren {
-  ProtectedProfileRoute: typeof ProtectedProfileRoute
+interface AuthenticatedRouteChildren {
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedIdeasNewRoute: typeof AuthenticatedIdeasNewRoute
+  AuthenticatedIdeasIdeaidEditRoute: typeof AuthenticatedIdeasIdeaidEditRoute
 }
 
-const ProtectedRouteChildren: ProtectedRouteChildren = {
-  ProtectedProfileRoute: ProtectedProfileRoute,
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedIdeasNewRoute: AuthenticatedIdeasNewRoute,
+  AuthenticatedIdeasIdeaidEditRoute: AuthenticatedIdeasIdeaidEditRoute,
 }
 
-const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
-  ProtectedRouteChildren,
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  authRouteRoute: authRouteRouteWithChildren,
-  ProtectedRoute: ProtectedRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   IdeasIndexRoute: IdeasIndexRoute,
-  IdeasIdeaidEditRoute: IdeasIdeaidEditRoute,
   IdeasIdeaidIndexRoute: IdeasIdeaidIndexRoute,
-  IdeasNewIndexRoute: IdeasNewIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

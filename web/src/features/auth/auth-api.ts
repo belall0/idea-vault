@@ -1,5 +1,8 @@
 import apiClient from "@/shared/api/api-client";
-import type { RegisterFormValues, LoginFormValues } from "@/features/auth/auth-schemas";
+import type {
+  RegisterFormValues,
+  LoginFormValues,
+} from "@/features/auth/auth-schemas";
 
 export const register = async (values: RegisterFormValues) => {
   const { confirmPassword: _, ...payload } = values;

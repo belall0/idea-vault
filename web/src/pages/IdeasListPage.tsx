@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ideasQueryOptions } from "@/features/ideas/ideas-queries";
 import IdeaCard from "@/features/ideas/IdeaCard";
 
-function IdeasListPage() {
+export default function IdeasListPage() {
   const { data: ideas } = useSuspenseQuery(ideasQueryOptions);
 
   return (
@@ -26,5 +26,3 @@ function IdeasListPage() {
     </div>
   );
 }
-
-export default IdeasListPage;

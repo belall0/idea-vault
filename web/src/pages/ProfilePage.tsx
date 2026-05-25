@@ -9,7 +9,7 @@ import {
 import { Separator } from "@/shared/ui/separator";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 
-function ProfilePage() {
+export default function ProfilePage() {
   const { user } = useAuth();
 
   const getInitials = (name: string) => {
@@ -77,5 +77,3 @@ function ProfilePage() {
     </div>
   );
 }
-
-export default ProfilePage;

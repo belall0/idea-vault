@@ -4,7 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { registerFormSchema, type RegisterFormValues } from "@/features/auth/auth-schemas";
+import {
+  registerFormSchema,
+  type RegisterFormValues,
+} from "@/features/auth/auth-schemas";
 import { Button } from "@/shared/ui/button";
 import {
   Card,
@@ -17,15 +20,10 @@ import {
 import { register } from "@/features/auth/auth-api";
 
 import { Controller } from "react-hook-form";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/shared/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 
-function RegisterForm() {
+export default function RegisterForm() {
   const navigate = useNavigate();
 
   const form = useForm<RegisterFormValues>({
@@ -207,5 +205,3 @@ function RegisterForm() {
     </Card>
   );
 }
-
-export default RegisterForm;

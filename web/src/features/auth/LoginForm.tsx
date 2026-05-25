@@ -23,7 +23,7 @@ import { getCurrentUser } from "@/features/auth/auth-users-api";
 import { useAuth } from "@/features/auth/auth-context";
 import { setToken } from "@/shared/api/api-client";
 
-function LoginForm() {
+export default function LoginForm() {
   const navigate = useNavigate();
   const { setAuth } = useAuth();
 
@@ -159,5 +159,3 @@ function LoginForm() {
     </Card>
   );
 }
-
-export default LoginForm;

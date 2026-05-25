@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
+
 import type { Idea } from "@/features/ideas/ideas-types";
 
-function IdeaCard({ idea }: { idea: Idea }) {
+export default function IdeaCard({ idea }: { idea: Idea }) {
   return (
     <Link
       to="/ideas/$ideaid"
@@ -14,5 +15,3 @@ function IdeaCard({ idea }: { idea: Idea }) {
     </Link>
   );
 }
-
-export default IdeaCard;

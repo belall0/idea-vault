@@ -3,8 +3,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+
 import { createIdea } from "@/features/ideas/ideas-api";
-import { ideaFormSchema, type IdeaFormValues } from "@/features/ideas/ideas-schemas";
+import {
+  ideaFormSchema,
+  type IdeaFormValues,
+} from "@/features/ideas/ideas-schemas";
 import IdeaFormFields from "@/features/ideas/IdeaFormFields";
 import { Button } from "@/shared/ui/button";
 import {

@@ -57,7 +57,7 @@ Our codebase is organized into four distinct layers. The golden rule of FSD is t
 - Global layouts: `RootLayout.tsx`, `AuthenticatedLayout.tsx`, etc.
 - **Rule:** Can import from any layer. No layer should import from `app`.
 
-> **Note on Routing (`src/routes/`):** We use TanStack Router with file-based routing. Route files must remain **thin wrappers**. They only handle routing configuration (paths, loaders, auth guards) and delegate UI rendering directly to components in the `pages/` layer.
+> **Note on Routing (`src/routes/`):** We use TanStack Router with **Flat File-based Routing**. Path hierarchies are represented using dot-separated filenames directly within the root `src/routes/` directory (e.g., `ideas.$ideaid.edit.tsx`), keeping the folder structure completely flat. Route files must remain **thin wrappers**. They only handle routing configuration (paths, loaders, auth guards) and delegate UI rendering directly to components in the `pages/` layer.
 
 ---
 
@@ -78,10 +78,18 @@ src/
 │   ├── HomePage.tsx
 │   ├── IdeaDetailPage.tsx
 │   └── ...
-├── routes/               # TanStack Router definitions (Thin wrappers)
+├── routes/               # TanStack Router definitions (Thin wrappers, flat file-based)
 │   ├── __root.tsx
 │   ├── index.tsx
-│   └── ideas/
+│   ├── _auth.tsx
+│   ├── _auth.login.tsx
+│   ├── _auth.register.tsx
+│   ├── _protected.tsx
+│   ├── _protected.profile.tsx
+│   ├── ideas.index.tsx
+│   ├── ideas.new.tsx
+│   ├── ideas.$ideaid.index.tsx
+│   └── ideas.$ideaid.edit.tsx
 └── shared/               # Domain-agnostic reusable code
     ├── api/              # Base Axios client
     ├── config/           # React Query setup
@@ -133,7 +141,7 @@ We use shadcn/ui for our component library. When you run `npx shadcn add <compon
 
 ### Adding a New Page
 
-1. **Create the Route:** Use the TanStack router CLI or create a file in `src/routes/` (e.g., `src/routes/settings.tsx`).
+1. **Create the Route:** Use the TanStack router CLI or create a file in `src/routes/` using dot-separated notation for nested paths (e.g., `src/routes/settings.tsx` or `src/routes/settings.details.tsx`).
 2. **Create the Page Component:** Create `src/pages/SettingsPage.tsx`.
 3. **Link Them:** Import and render `SettingsPage` inside your route file.
 

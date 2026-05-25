@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ideaDetailQueryOptions } from "@/features/ideas/ideas-queries";
 import EditIdeaForm from "@/features/ideas/EditIdeaForm";
 
-function EditIdeaPage({ ideaid }: { ideaid: string }) {
+export default function EditIdeaPage({ ideaid }: { ideaid: string }) {
   const { data: idea } = useSuspenseQuery(ideaDetailQueryOptions(ideaid));
 
   return (
@@ -11,5 +11,3 @@ function EditIdeaPage({ ideaid }: { ideaid: string }) {
     </div>
   );
 }
-
-export default EditIdeaPage;
