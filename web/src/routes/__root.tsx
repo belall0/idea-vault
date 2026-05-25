@@ -1,6 +1,6 @@
 import { createRootRouteWithContext } from "@tanstack/react-router";
-import RootLayout from "@/components/RootLayout";
-import type { RouterContext } from "@/types/router-context";
+import RootLayout from "@/app/layouts/RootLayout";
+import type { RouterContext } from "@/shared/types/router-context";
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({

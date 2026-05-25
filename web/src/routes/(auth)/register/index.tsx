@@ -1,14 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import RegisterForm from "@/components/auth/RegisterForm";
+import RegisterPage from "@/pages/RegisterPage";
 
 export const Route = createFileRoute("/(auth)/register/")({
   component: RegisterPage,
 });
-
-function RegisterPage() {
-  return (
-    <div className="flex w-full items-center justify-center py-12">
-      <RegisterForm />
-    </div>
-  );
-}

@@ -1,7 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ideaDetailQueryOptions } from "@/queries/ideas";
-import EditIdeaForm from "@/components/EditIdeaForm";
+import { ideaDetailQueryOptions } from "@/features/ideas/ideas-queries";
+import EditIdeaPage from "@/pages/EditIdeaPage";
 
 export const Route = createFileRoute("/ideas/$ideaid/edit")({
   beforeLoad: async ({ params, context }) => {
@@ -24,16 +23,10 @@ export const Route = createFileRoute("/ideas/$ideaid/edit")({
   head: ({ loaderData }) => ({
     meta: [{ title: `Edit ${loaderData?.title}` }],
   }),
-  component: EditIdeaPage,
+  component: EditIdeaPageWrapper,
 });
 
-function EditIdeaPage() {
+function EditIdeaPageWrapper() {
   const { ideaid } = Route.useParams();
-  const { data: idea } = useSuspenseQuery(ideaDetailQueryOptions(ideaid));
-
-  return (
-    <div className="flex justify-center p-4">
-      <EditIdeaForm idea={idea} />
-    </div>
-  );
+  return <EditIdeaPage ideaid={ideaid} />;
 }
