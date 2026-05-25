@@ -185,18 +185,10 @@ function RegisterForm() {
       <CardFooter className="flex flex-col items-start gap-4">
         <Field orientation="horizontal">
           <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={mutation.isPending}
-          >
-            Reset
-          </Button>
-
-          <Button
             type="submit"
             form="register-form"
             disabled={mutation.isPending}
+            className="w-full"
           >
             {mutation.isPending ? "Submitting..." : "Submit"}
           </Button>

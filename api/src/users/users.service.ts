@@ -31,7 +31,7 @@ export class UsersService implements OnApplicationBootstrap {
       const duplicateKeyErrorCode = 11000;
 
       if ((error as { code?: number }).code === duplicateKeyErrorCode) {
-        throw new ConflictException('Registration failed');
+        throw new ConflictException('Email already registered');
       }
 
       throw new InternalServerErrorException();

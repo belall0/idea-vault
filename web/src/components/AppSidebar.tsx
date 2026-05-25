@@ -10,7 +10,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -24,11 +23,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import {
   House,
-  Compass,
   User,
   LogOut,
   ChevronsUpDown,
   Lightbulb,
+  Compass,
 } from "lucide-react";
 
 const navItems = [
@@ -63,13 +62,13 @@ function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip="IdeaDrop">
+            <SidebarMenuButton size="lg" asChild tooltip="IdeaVault">
               <Link to="/">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Lightbulb className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">IdeaDrop</span>
+                  <span className="truncate font-semibold">IdeaVault</span>
                   <span className="text-muted-foreground truncate text-xs">
                     Your Idea Hub
                   </span>
@@ -79,8 +78,6 @@ function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarSeparator />
 
       {/* Navigation */}
       <SidebarContent>

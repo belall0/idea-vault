@@ -46,6 +46,7 @@ export class AuthController {
     return { access_token: accessToken };
   }
 
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   public async refresh(

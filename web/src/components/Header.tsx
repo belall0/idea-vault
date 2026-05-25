@@ -12,7 +12,7 @@ function Header({ leading }: HeaderProps) {
 
   return (
     <header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-30 border-b backdrop-blur">
-      <div className="flex h-14 items-center gap-4 px-4 md:px-6">
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4 md:px-6">
         {/* Leading content (sidebar trigger when authenticated) */}
         {leading}
 
@@ -23,16 +23,12 @@ function Header({ leading }: HeaderProps) {
             className="text-foreground flex items-center gap-2 text-lg font-semibold"
           >
             <Lightbulb className="size-5" />
-            <span>IdeaDrop</span>
+            <span>IdeaVault</span>
           </Link>
         </div>
 
         {/* Nav */}
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/ideas">Ideas</Link>
-          </Button>
-
           {user && (
             <Button size="sm" asChild>
               <Link to="/ideas/new" className="flex items-center gap-2">
@@ -43,9 +39,8 @@ function Header({ leading }: HeaderProps) {
           )}
         </nav>
 
-        {/* Auth */}
         <div className="flex items-center gap-2">
-          {!user ? (
+          {!user && (
             <>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/login">Login</Link>
@@ -55,10 +50,6 @@ function Header({ leading }: HeaderProps) {
                 <Link to="/register">Register</Link>
               </Button>
             </>
-          ) : (
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/profile">Profile</Link>
-            </Button>
           )}
         </div>
       </div>

@@ -1,58 +1,28 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import IdeaCard from "@/components/IdeaCard";
-
-import { ideasQueryOptions } from "@/queries/ideas.ts";
+import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => {
-    return context.queryClient.ensureQueryData(ideasQueryOptions);
-  },
   component: HomePage,
 });
 
 function HomePage() {
-  const { data: ideas } = useSuspenseQuery(ideasQueryOptions);
+  const { user } = useAuth();
 
   return (
-    <div className="flex flex-col gap-10 py-4 md:flex-row md:items-start md:py-8">
-      {/* Hero section */}
-      <div className="flex flex-col gap-4 md:max-w-xs md:pt-4">
-        <h1 className="text-foreground text-3xl font-bold tracking-tight md:text-4xl">
-          Welcome to IdeaDrop
-        </h1>
-        <p className="text-muted-foreground max-w-xs leading-relaxed">
-          Share, explore, and build on the best startup ideas and side hustles.
-        </p>
-      </div>
-
-      {/* Latest ideas */}
-      <section className="flex-1">
-        <h2 className="text-foreground mb-4 text-xl font-semibold tracking-tight md:text-2xl">
-          Latest Ideas
-        </h2>
-
-        <ul className="flex flex-col gap-4">
-          {ideas.map((idea) => {
-            return (
-              <li key={idea._id}>
-                <IdeaCard idea={idea} />
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="mt-6">
-          <Button asChild className="w-full md:w-auto">
-            <Link to="/ideas">
-              View All Ideas
-              <ArrowRight data-icon="inline-end" />
-            </Link>
-          </Button>
+    <>
+      {user ? (
+        <h1>Welcome {user.name}</h1>
+      ) : (
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
+          <h1 className="text-4xl font-extrabold tracking-tight text-blue-600 sm:text-5xl">
+            Welcome to IdeaVault
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-gray-600">
+            Share, explore, and build on the best startup ideas and side
+            hustles.
+          </p>
         </div>
-      </section>
-    </div>
+      )}
+    </>
   );
 }
