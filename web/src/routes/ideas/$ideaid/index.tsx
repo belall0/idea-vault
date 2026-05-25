@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { ideaDetailQueryOptions } from "@/queries/ideas";
 import { deleteIdea } from "@/api/ideas";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
@@ -26,8 +27,10 @@ export const Route = createFileRoute("/ideas/$ideaid/")({
 function IdeaDetailsPage() {
   const { ideaid } = Route.useParams();
   const { data: idea } = useSuspenseQuery(ideaDetailQueryOptions(ideaid));
+  const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isOwner = user?.id === idea.userId;
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteIdea(ideaid),
@@ -50,32 +53,34 @@ function IdeaDetailsPage() {
             Back to Ideas
           </Link>
         </Button>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate({ to: `/ideas/${ideaid}/edit` })}
-          >
-            <Pencil data-icon="inline-start" />
-            Edit
-          </Button>
+        {isOwner && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate({ to: `/ideas/${ideaid}/edit` })}
+            >
+              <Pencil data-icon="inline-start" />
+              Edit
+            </Button>
 
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => {
-              if (
-                window.confirm("Are you sure you want to delete this idea?")
-              ) {
-                deleteMutation.mutate();
-              }
-            }}
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 data-icon="inline-start" />
-            {deleteMutation.isPending ? "Deleting..." : "Delete"}
-          </Button>
-        </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (
+                  window.confirm("Are you sure you want to delete this idea?")
+                ) {
+                  deleteMutation.mutate();
+                }
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 data-icon="inline-start" />
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Separator className="mb-6" />
