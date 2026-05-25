@@ -1,11 +1,11 @@
 import { Outlet } from "@tanstack/react-router";
 
-import Header from "@/app/components/Header";
+import GuestHeader from "@/app/components/GuestHeader";
 
 export default function GuestLayout() {
   return (
     <>
-      <Header />
+      <GuestHeader />
       <Outlet />
     </>
   );
