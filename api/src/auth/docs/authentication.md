@@ -42,16 +42,13 @@ When the client needs a new access token, it sends the raw refresh token (via co
 
 Logout involves finding the current refresh token's family (`sessionId`) and revoking all active tokens within that family. Even if the token has expired or is already revoked, the logout is considered successful.
 
-### 4. Password Change
-
-A password change is a sensitive action. When a user changes their password, we must invalidate all existing sessions to force any active devices to re-authenticate. The system revokes all refresh tokens linked to that `userId` across all devices.
-
 ## Future Considerations / Missing Flows
 
 The following flows are currently missing and will be implemented in the future:
 
-- **Password Reset Flow:** Requesting a reset link via email, validating the reset token, and securely updating the password.
 - **Email Verification:** Sending an OTP or verification link upon registration and ensuring the user cannot access certain features until verified.
+- **Password Change Flow:** Requesting to change the password and updating it (requires user to be logged in).
+- **Password Reset Flow:** Requesting a reset link via email, validating the reset token, and securely updating the password.
 
 ## Edge Cases and Security
 

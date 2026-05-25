@@ -1,15 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import * as argon from 'argon2';
 
 import { UsersService } from '../users/users.service';
 import { AppConfigService } from '../app-config/app-config.service';
 import { RefreshTokenService } from './refresh-token.service';
-import { RegisterDto, LoginDto, ChangePasswordDto } from './types';
+import { RegisterDto, LoginDto } from './types';
 
 @Injectable()
 export class AuthService {
@@ -70,23 +66,6 @@ export class AuthService {
     const accessToken = await this.signToken(record.userId.toString());
 
     return { accessToken, rawRefreshToken: newRawRefreshToken };
-  }
-
-  public async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const pwMatches = await argon.verify(user.hash, dto.oldPassword);
-    if (!pwMatches) {
-      throw new UnauthorizedException('Incorrect old password');
-    }
-
-    const hash = await argon.hash(dto.newPassword);
-    await this.usersService.updateHash(userId, hash);
-
-    await this.refreshTokenService.revokeAllUserSessions(userId);
   }
 
   public async logout(rawRefreshToken: string): Promise<void> {

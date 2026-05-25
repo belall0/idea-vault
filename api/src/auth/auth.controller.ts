@@ -4,8 +4,6 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  Patch,
-  UseGuards,
   Req,
   Res,
   UnauthorizedException,
@@ -15,9 +13,7 @@ import { Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { AppConfigService } from '../app-config/app-config.service';
-import { JwtGuard } from './guards';
-import { GetUser } from './decorators';
-import { RegisterDto, LoginDto, ChangePasswordDto } from './types';
+import { RegisterDto, LoginDto } from './types';
 
 @Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('auth')
@@ -73,17 +69,6 @@ export class AuthController {
     );
 
     return { access_token: accessToken };
-  }
-
-  @Patch('change-password')
-  @UseGuards(JwtGuard)
-  public async changePassword(
-    @GetUser('id') userId: string,
-    @Body() changePasswordDto: ChangePasswordDto,
-  ) {
-    await this.authService.changePassword(userId, changePasswordDto);
-
-    return { success: true };
   }
 
   @HttpCode(HttpStatus.OK)
