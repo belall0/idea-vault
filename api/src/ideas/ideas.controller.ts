@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   Query,
@@ -55,7 +55,7 @@ export class IdeasController {
     return this.ideasService.create(userId, createIdeaDto);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @UseGuards(JwtGuard)
   update(
     @GetUser('id') userId: string,

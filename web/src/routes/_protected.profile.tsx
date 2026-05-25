@@ -7,17 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_protected/profile")({
   component: ProfilePage,
 });
 
 function ProfilePage() {
-  const { user, clearAuth } = useAuth();
+  const { user } = useAuth();
 
   const getInitials = (name: string) => {
     return name
@@ -44,7 +42,9 @@ function ProfilePage() {
             </div>
           </div>
         </CardHeader>
+
         <Separator />
+
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
@@ -55,26 +55,28 @@ function ProfilePage() {
                 {user?.id}
               </span>
             </div>
+
             <div className="flex flex-col gap-1">
               <span className="text-muted-foreground text-sm font-medium">
                 Name
               </span>
               <span className="text-foreground">{user?.name}</span>
             </div>
+
             <div className="flex flex-col gap-1">
               <span className="text-muted-foreground text-sm font-medium">
                 Email
               </span>
               <span className="text-foreground">{user?.email}</span>
             </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-muted-foreground text-sm font-medium">
+                Role
+              </span>
+              <span className="text-foreground">{user?.role}</span>
+            </div>
           </div>
-
-          <Separator className="my-6" />
-
-          <Button variant="destructive" onClick={clearAuth}>
-            <LogOut data-icon="inline-start" />
-            Sign Out
-          </Button>
         </CardContent>
       </Card>
     </div>
