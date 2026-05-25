@@ -1,5 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
-import Header from "@/app/layouts/Header";
+import Header from "@/app/components/Header";
 
 function GuestLayout() {
   return (

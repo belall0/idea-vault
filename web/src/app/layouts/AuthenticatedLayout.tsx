@@ -1,5 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
-import AppSidebar from "@/app/layouts/AppSidebar";
+import AppSidebar from "@/app/components/AppSidebar";
 import {
   SidebarProvider,
   SidebarInset,
