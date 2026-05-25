@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { User } from '../../users/schemas/user.schema';
 
 export type IdeaDocument = HydratedDocument<Idea>;
 
@@ -16,10 +15,9 @@ export class Idea {
   description: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  userId: User;
-
-  @Prop({ type: Boolean, default: false })
-  featured: boolean;
+  userId: mongoose.Types.ObjectId;
 }
 
 export const IdeaSchema = SchemaFactory.createForClass(Idea);
+
+IdeaSchema.index({ userId: 1 });
