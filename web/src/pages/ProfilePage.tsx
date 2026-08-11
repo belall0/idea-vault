@@ -64,13 +64,6 @@ export default function ProfilePage() {
               </span>
               <span className="text-foreground">{user?.email}</span>
             </div>
-
-            <div className="flex flex-col gap-1">
-              <span className="text-muted-foreground text-sm font-medium">
-                Role
-              </span>
-              <span className="text-foreground">{user?.role}</span>
-            </div>
           </div>
         </CardContent>
       </Card>
