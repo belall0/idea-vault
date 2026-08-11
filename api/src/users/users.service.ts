@@ -10,7 +10,7 @@ import { Model } from 'mongoose';
 
 import { AppConfigService } from '../app-config/app-config.service';
 import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto, UserRole } from './types';
+import { CreateUserDto } from './types';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -67,7 +67,6 @@ export class UsersService implements OnApplicationBootstrap {
           name: defaultAdmin.name,
           email: defaultAdmin.email,
           hash,
-          role: UserRole.ADMIN,
         });
         await adminUser.save();
       }
