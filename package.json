@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev:api": "pnpm --filter api start:dev",
-    "dev:web": "pnpm --filter web dev",
-    "seed:api": "pnpm --filter api seed"
+    "dev:web": "pnpm --filter web dev"
   },
-  "license": "ISC",
   "packageManager": "pnpm@10.33.0"
 }
