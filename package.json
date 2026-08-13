@@ -2,7 +2,6 @@
   "name": "idea-vault",
   "version": "1.0.0",
   "description": "Idea Vault - Collection of ideas",
-  "main": "index.js",
   "scripts": {
     "dev:api": "pnpm --filter api start:dev",
     "dev:web": "pnpm --filter web dev"
