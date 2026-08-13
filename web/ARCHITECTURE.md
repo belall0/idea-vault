@@ -1,6 +1,6 @@
 # IdeaVault Web Architecture
 
-Welcome to the IdeaVault frontend architecture documentation. This document is designed to help developers quickly understand our application structure, core concepts, conventions, and development workflows.
+This document is designed to help developers quickly understand our application structure, core concepts, conventions, and development workflows.
 
 ## Overview
 
@@ -162,18 +162,3 @@ We standardize on **React Hook Form** paired with **Zod** for validation.
 3. Use the `Field`, `FieldLabel`, `FieldError` components from `shared/ui/field` to build accessible forms quickly.
 
 ---
-
-## Getting Started
-
-To spin up the development environment:
-
-```bash
-npm install
-npm run dev
-```
-
-To run type checking and build for production:
-
-```bash
-npm run build
-```

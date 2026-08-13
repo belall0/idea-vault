@@ -10,5 +10,6 @@ import { Idea, IdeaSchema } from './schemas/idea.schema';
   ],
   controllers: [IdeasController],
   providers: [IdeasService],
+  exports: [IdeasService, MongooseModule],
 })
 export class IdeasModule {}

@@ -30,6 +30,7 @@ export class UsersService implements OnApplicationBootstrap {
     } catch (error) {
       const duplicateKeyErrorCode = 11000;
       if ((error as { code?: number }).code === duplicateKeyErrorCode) {
+        // TODO: Handle duplicate key errors for all unique fields and return the appropriate conflict message.
         throw new ConflictException('Email already registered');
       }
       throw new InternalServerErrorException();
@@ -61,15 +62,17 @@ export class UsersService implements OnApplicationBootstrap {
 
     try {
       const existingAdmin = await this.findByEmail(defaultAdmin.email);
-      if (!existingAdmin) {
-        const hash = await argon.hash(defaultAdmin.password);
-        const adminUser = new this.userModel({
-          name: defaultAdmin.name,
-          email: defaultAdmin.email,
-          hash,
-        });
-        await adminUser.save();
+      if (existingAdmin) {
+        return;
       }
+
+      const hash = await argon.hash(defaultAdmin.password);
+      const adminUser = new this.userModel({
+        name: defaultAdmin.name,
+        email: defaultAdmin.email,
+        hash,
+      });
+      await adminUser.save();
     } catch (error) {
       console.error('[Startup] Failed to create default admin account:', error);
     }

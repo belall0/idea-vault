@@ -32,6 +32,13 @@ describe('Auth e2e', () => {
       imports: [AppModule],
     }).compile();
 
+    const connection = moduleRef.get<Connection>(getConnectionToken());
+    await connection.dropDatabase();
+
+    for (const model of Object.values(connection.models)) {
+      await model.syncIndexes();
+    }
+
     app = moduleRef.createNestApplication();
 
     app.use(helmet());
@@ -48,13 +55,6 @@ describe('Auth e2e', () => {
     await app.init();
     await app.listen(port);
 
-    const connection = app.get<Connection>(getConnectionToken());
-    await connection.dropDatabase();
-
-    for (const model of Object.values(connection.models)) {
-      await model.syncIndexes();
-    }
-
     pactum.request.setBaseUrl(`http://localhost:${port}/api`);
 
     userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
@@ -64,7 +64,9 @@ describe('Auth e2e', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('POST /auth/register', () => {
