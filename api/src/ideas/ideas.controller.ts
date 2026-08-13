@@ -8,7 +8,6 @@ import {
   Delete,
   Query,
   UseGuards,
-  UnauthorizedException,
 } from '@nestjs/common';
 
 import { IdeasService } from './ideas.service';
@@ -16,32 +15,21 @@ import { CreateIdeaDto } from './types/dtos/create-idea.dto';
 import { UpdateIdeaDto } from './types/dtos/update-idea.dto';
 import { FindAllIdeasDto } from './types/dtos/find-all-ideas.dto';
 import { JwtGuard } from '../auth/guards/jwt.guard';
-import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
-import type { AuthenticatedUser } from '../auth/types';
 
 @Controller('ideas')
 export class IdeasController {
   constructor(private ideasService: IdeasService) {}
 
-  @Get()
-  @UseGuards(OptionalJwtGuard)
-  findAll(
-    @GetUser() user: AuthenticatedUser | undefined,
-    @Query() query: FindAllIdeasDto,
-  ) {
-    let { userId } = query;
-
-    if (userId === 'me') {
-      if (!user) {
-        throw new UnauthorizedException(
-          'Authentication required to use userId=me',
-        );
-      }
-      userId = user.id;
-    }
-
+  @Get('me')
+  @UseGuards(JwtGuard)
+  findMyIdeas(@GetUser('id') userId: string) {
     return this.ideasService.findAll(userId);
+  }
+
+  @Get()
+  findAll(@Query() query: FindAllIdeasDto) {
+    return this.ideasService.findAll(query.userId);
   }
 
   @Get(':id')
