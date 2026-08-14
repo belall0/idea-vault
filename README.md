@@ -9,8 +9,7 @@ A full-stack idea management system demonstrating production-grade software engi
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [System Architecture](#system-architecture)
-  - [Project Structure](#project-structure)
+- [Project Structure](#project-structure)
 - [Backend Architecture](#backend-architecture)
 - [Frontend Architecture](#frontend-architecture)
 - [Authentication Design](#authentication-design)
@@ -25,21 +24,7 @@ IdeaVault is a platform where users can capture, browse, and manage startup idea
 
 ---
 
-## System Architecture
-
-```mermaid
-flowchart TD
-    Browser["Browser (SPA)\n\nReact, TanStack Router, TanStack Query, Axios"]
-    API["NestJS REST API\n\nControllers → Services → Mongoose ODM\n\nJwtGuard, Throttler, Helmet, ValidationPipe"]
-    DB["MongoDB Atlas"]
-
-    Browser -->|"HTTP/REST\nJSON + HttpOnly Cookie"| API
-    API --> DB
-```
-
-The backend exposes a REST API. The frontend is a fully client-side React SPA served statically (no SSR). Cross-origin credentials are sent via `withCredentials: true` on Axios, and the backend explicitly allows the configured frontend origin with `credentials: true` in CORS options.
-
-### Project Structure
+## Project Structure
 
 ```
 idea-vault/                     # pnpm workspace root
