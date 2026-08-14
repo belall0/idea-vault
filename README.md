@@ -246,6 +246,7 @@ Ensure `TEST_DB_URL` points to a **separate** database from `DB_URL` — the tes
 
 ## Important Documentation
 
+- [`docs/deployment-guide.md`](docs/deployment-guide.md) — Deployment architecture, first-time setup for Heroku and Vercel, and deployment commands.
 - [`docs/ci-pipeline.md`](docs/ci-pipeline.md) — Continuous Integration pipeline architecture, triggers, parallel jobs, and services.
 - [`docs/authentication-design.md`](docs/authentication-design.md) — Token architecture, refresh token rotation, reuse detection, and client session lifecycle.
 - [`docs/testing-strategy.md`](docs/testing-strategy.md) — E2E testing approach, framework setup, test coverage, and database side-effect assertions.
