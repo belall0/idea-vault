@@ -7,7 +7,6 @@
     "dev:api": "pnpm --filter api start:dev",
     "dev:web": "pnpm --filter web dev",
     "test:api:e2e": "pnpm --filter api test:e2e",
-    "test:commit-msg": "node scripts/test-commit-msg-validator.js",
     "prepare": "husky"
   },
   "devDependencies": {

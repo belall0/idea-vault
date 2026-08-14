@@ -8,19 +8,11 @@ A full-stack idea management system demonstrating production-grade software engi
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
 - [Project Structure](#project-structure)
 - [Backend Architecture](#backend-architecture)
 - [Frontend Architecture](#frontend-architecture)
-- [Authentication Design](#authentication-design)
-- [Testing Strategy](#testing-strategy)
-- [Engineering Decisions](#engineering-decisions)
-
----
-
-## Project Overview
-
-IdeaVault is a platform where users can capture, browse, and manage startup ideas. Unauthenticated visitors can explore all public ideas; authenticated users can create, edit, and delete their own.
+- [Development Setup](#development-setup)
+- [Important Documentation](#important-documentation)
 
 ---
 
@@ -28,8 +20,11 @@ IdeaVault is a platform where users can capture, browse, and manage startup idea
 
 ```
 idea-vault/                     # pnpm workspace root
+├── .husky/                     # Git hooks (commit-msg validation)
+├── docs/                       # Project documentation
 ├── package.json                # Root scripts: dev:api, dev:web, test:api:e2e
 ├── pnpm-workspace.yaml         # Declares [api, web] as workspace packages
+├── scripts/                    # Automation scripts (validate-commit-msg.js)
 │
 ├── api/                        # NestJS backend
 │   ├── src/
@@ -170,125 +165,6 @@ The full frontend architecture is documented in [`web/ARCHITECTURE.md`](./web/AR
 
 ---
 
-## Authentication Design
-
-This is the most technically interesting part of the project. The implementation goes beyond a basic JWT setup.
-
-### Token Architecture
-
-```mermaid
-flowchart TD
-    Login["Login"] --> AT["Access Token (JWT, 15 min)"]
-    Login --> RT["Refresh Token (opaque, 7d)"]
-
-    AT --> Body["Returned in response body"]
-    RT --> Cookie["Stored as HttpOnly cookie"]
-    RT --> DB["SHA-256 hash persisted in MongoDB<br/>(Raw token is never stored)"]
-```
-
-**Why this split?** Access tokens are short-lived and stateless — the server validates them with no DB lookup. Refresh tokens are long-lived and stateful — each one is tracked in the DB to enable revocation.
-
-### Refresh Token Rotation
-
-Every call to `POST /auth/refresh`:
-
-1. Validates the incoming raw token against its SHA-256 hash in the DB.
-2. Marks the old token record as **consumed** (`revokedAt = now`, `replacedByTokenHash = newHash`).
-3. Creates a new token record **within the same `sessionId`**.
-4. Returns a new access token + sets a new refresh token cookie.
-
-This creates a **linked chain** of token records — the rotation history is fully auditable.
-
-### Reuse Detection (Token Family Revocation)
-
-If a previously-consumed token is presented again, the system detects an active session compromise and **immediately revokes all tokens sharing the same `sessionId`**, logging the user out of all devices in that session family.
-
-```
-Token A → consumed → replaced by Token B (same sessionId)
-Token A presented again → REUSE DETECTED → revoke Token A + Token B
-```
-
-### Frontend Token Management
-
-The `AuthContext` manages the token lifecycle on the client:
-
-- **`useLayoutEffect`** registers Axios request/response interceptors **once** before any child renders fire. This avoids race conditions during initial load.
-- A **module-level variable** (`let accessToken`) stores the token synchronously. The Axios request interceptor reads this variable — not React state — so it is always current without async lookups.
-- On 401 responses, the interceptor **deduplicates concurrent refresh calls** using a shared `refreshPromise`. Multiple simultaneous failed requests share one refresh, then replay.
-- On app load, `AuthContext` silently calls `POST /auth/refresh` to restore session state without requiring the user to log in again.
-
----
-
-## Testing Strategy
-
-### Approach
-
-All automated tests are **end-to-end (e2e)**. Each test suite spins up a full `NestApplication` against a **dedicated test database** (`TEST_DB_URL`), which is dropped and re-indexed in `beforeAll`. This means:
-
-- Tests verify real HTTP behaviour (status codes, headers, cookies, body shape).
-- Database side effects are asserted directly via injected Mongoose models.
-- No mocking of services or repositories — the entire application stack is exercised.
-
-### Frameworks
-
-| Tool                                  | Role                                              |
-| ------------------------------------- | ------------------------------------------------- |
-| [Jest](https://jestjs.io/)            | Test runner and assertion library                 |
-| [Pactum](https://pactumjs.github.io/) | Fluent HTTP spec library for clean test authoring |
-
-### Test Coverage
-
-| Suite      | File                     | Cases |
-| ---------- | ------------------------ | ----- |
-| Auth       | `test/auth.e2e-spec.ts`  | ~50   |
-| Ideas      | `test/ideas.e2e-spec.ts` | ~40   |
-| Users      | `test/users.e2e-spec.ts` | ~10   |
-| App health | `test/app.e2e-spec.ts`   | Smoke |
-
-### Test Categories per Endpoint
-
-Each endpoint is tested across four lenses:
-
-| Lens                 | What it verifies                                          |
-| -------------------- | --------------------------------------------------------- |
-| **Input validation** | Malformed / missing fields → 400                          |
-| **Authentication**   | Missing / invalid token → 401                             |
-| **Business logic**   | Correct status codes and body shape on happy + sad paths  |
-| **Side effects**     | DB state assertions (token creation, hashing, revocation) |
-
-### Notable Side-Effect Assertions
-
-- Registration persists passwords as Argon2 hashes (not plaintext) — verified by reading the DB directly.
-- Login failure does **not** create any refresh token records — confirmed by document-count comparison before and after.
-- Refresh token reuse triggers session-family revocation — the entire token chain is verified as `revokedAt != null`.
-- Logout correctly marks tokens revoked in the DB; an invalid-token logout does **not** alter other active sessions.
-
-### ThrottlerGuard in Tests
-
-The global `ThrottlerGuard` is applied as an `APP_GUARD`. In e2e tests, it is bypassed cleanly with a `jest.spyOn` mock — no production code changes, no special test module overrides.
-
----
-
-## Engineering Decisions
-
-### Why Opaque Refresh Tokens (not JWT refresh tokens)?
-
-JWT refresh tokens cannot be revoked without a server-side lookup. Using an opaque token with a hashed DB record enables:
-
-- Single-token revocation on logout
-- Session-family revocation on reuse detection
-- A full audit trail via the `replacedByTokenHash` chain
-
-### Why Feature-Sliced Design on the Frontend?
-
-FSD enforces a unidirectional dependency graph (`app → pages → features → shared`). This prevents the "component spaghetti" problem common in large React projects, where components import freely from each other creating hidden coupling. The pragmatic 4-layer reduction keeps the overhead manageable for a project of this scale.
-
-### Why E2E Tests over Unit Tests?
-
-For a REST API, e2e tests give the highest confidence with the least surface area to maintain. Unit-testing services in isolation requires mocking Mongoose models and NestJS providers — boilerplate that often ends up testing the mocks rather than real behaviour. Testing against a real database verifies the full stack, including indexes, schema validation, and Mongoose middleware.
-
----
-
 ## Development Setup
 
 ### Prerequisites
@@ -366,3 +242,11 @@ pnpm test:api:e2e
 Ensure `TEST_DB_URL` points to a **separate** database from `DB_URL` — the test suite drops the entire database in `beforeAll`.
 
 ---
+
+## Important Documentation
+
+- [`docs/authentication-design.md`](docs/authentication-design.md) — Token architecture, refresh token rotation, reuse detection, and client session lifecycle.
+- [`docs/testing-strategy.md`](docs/testing-strategy.md) — E2E testing approach, framework setup, test coverage, and database side-effect assertions.
+- [`docs/engineering-decisions.md`](docs/engineering-decisions.md) — Rationale for key architectural and technical design trade-offs.
+- [`docs/commit-conventions.md`](docs/commit-conventions.md) — Git commit message formatting rules and automated validation.
+
