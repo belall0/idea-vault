@@ -20,9 +20,10 @@ A full-stack idea management system demonstrating production-grade software engi
 
 ```
 idea-vault/                     # pnpm workspace root
+├── .github/workflows/          # GitHub Actions CI pipelines (ci.yml)
 ├── .husky/                     # Git hooks (commit-msg validation)
 ├── docs/                       # Project documentation
-├── package.json                # Root scripts: dev:api, dev:web, test:api:e2e
+├── package.json                # Root scripts: dev, build, lint, test
 ├── pnpm-workspace.yaml         # Declares [api, web] as workspace packages
 ├── scripts/                    # Automation scripts (validate-commit-msg.js)
 │
@@ -245,8 +246,8 @@ Ensure `TEST_DB_URL` points to a **separate** database from `DB_URL` — the tes
 
 ## Important Documentation
 
+- [`docs/ci-pipeline.md`](docs/ci-pipeline.md) — Continuous Integration pipeline architecture, triggers, parallel jobs, and services.
 - [`docs/authentication-design.md`](docs/authentication-design.md) — Token architecture, refresh token rotation, reuse detection, and client session lifecycle.
 - [`docs/testing-strategy.md`](docs/testing-strategy.md) — E2E testing approach, framework setup, test coverage, and database side-effect assertions.
 - [`docs/engineering-decisions.md`](docs/engineering-decisions.md) — Rationale for key architectural and technical design trade-offs.
 - [`docs/commit-conventions.md`](docs/commit-conventions.md) — Git commit message formatting rules and automated validation.
-
